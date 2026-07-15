@@ -53,6 +53,7 @@
   --win-btn-dk-shadow: #404040;
   --text-dark: #000000;
   --accent-navy: #000080;
+  --accent-red: #c00000;
 }
 
 .dark {
@@ -237,10 +238,13 @@ body {
   flex-shrink: 0;
 }
 
-.window-controls span {
+.window-controls span,
+.window-controls button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  padding: 0;
+  box-sizing: border-box;
   width: 16px;
   height: 14px;
   background: var(--win-btn-face);
@@ -256,7 +260,8 @@ body {
   line-height: 1;
 }
 
-.window-controls span:active {
+.window-controls span:active,
+.window-controls button:active {
   border-top: 1px solid var(--win-btn-dk-shadow);
   border-left: 1px solid var(--win-btn-dk-shadow);
   border-right: 1px solid var(--win-btn-hilight);

@@ -1,6 +1,6 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Analytics } from "@vercel/analytics/next"
+import { asset } from "@/lib/utils"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -10,19 +10,19 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: "/icon-light-32x32.png",
+        url: asset("/icon-light-32x32.png"),
         media: "(prefers-color-scheme: light)",
       },
       {
-        url: "/icon-dark-32x32.png",
+        url: asset("/icon-dark-32x32.png"),
         media: "(prefers-color-scheme: dark)",
       },
       {
-        url: "/icon.svg",
+        url: asset("/icon.svg"),
         type: "image/svg+xml",
       },
     ],
-    apple: "/apple-icon.png",
+    apple: asset("/apple-icon.png"),
   },
 }
 
@@ -35,7 +35,6 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased">
         {children}
-        <Analytics />
       </body>
     </html>
   )

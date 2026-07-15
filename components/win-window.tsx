@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef, useState, type ReactNode, type PointerEvent } from "react"
+import { onImgError } from "@/lib/utils"
 
 interface WinWindowProps {
   title: string
@@ -86,16 +87,15 @@ export function WinWindow({
     >
       <div className="window-header" onPointerDown={onHeaderDown} style={{ cursor: "move", touchAction: "none" }}>
         <span className="window-title-text">
-          {icon && <img src={icon} alt="" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />}
+          {icon && <img src={icon} alt="" onError={onImgError} />}
           {title}
         </span>
         <div className="window-controls">
           {controls === "full" && (
-            <span
+            <button
+              type="button"
               className="win-btn-minimize"
-              role="button"
               aria-label="Minimize"
-              style={{ cursor: "pointer" }}
               onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation()
@@ -103,18 +103,17 @@ export function WinWindow({
               }}
             >
               _
-            </span>
+            </button>
           )}
           {controls === "full" && (
             <span className="win-btn-maximize" aria-hidden="true">
               □
             </span>
           )}
-          <span
+          <button
+            type="button"
             className="win-btn-close"
-            role="button"
             aria-label="Close"
-            style={{ cursor: "pointer" }}
             onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => {
               e.stopPropagation()
@@ -122,7 +121,7 @@ export function WinWindow({
             }}
           >
             ×
-          </span>
+          </button>
         </div>
       </div>
       {children}

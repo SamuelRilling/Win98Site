@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react"
 import { WinWindow } from "@/components/win-window"
+import { asset, onImgError } from "@/lib/utils"
 
 type WindowType = "computer" | "documents" | "recycle" | "projects" | "about" | "portfolio" | "hero"
 
@@ -89,7 +90,7 @@ export default function Home() {
               <img
                 src="https://win98icons.alexmeub.com/icons/png/windows-0.png"
                 alt=""
-                className="welcome-flag" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }}
+                className="welcome-flag" onError={onImgError}
               />
               <div className="welcome-banner-text">
                 <span className="welcome-ms">Microsoft</span>
@@ -148,7 +149,7 @@ export default function Home() {
                   href="https://jess.vc"
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: "var(--xmas-red)", fontWeight: "bold" }}
+                  style={{ color: "var(--accent-red)", fontWeight: "bold" }}
                 >
                   jess.vc
                 </a>
@@ -161,7 +162,7 @@ export default function Home() {
                   className="folder-item"
                   style={{ textDecoration: "none", color: "inherit" }}
                 >
-                  <img src="https://win98icons.alexmeub.com/icons/png/html-0.png" alt="1UI.dev" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+                  <img src="https://win98icons.alexmeub.com/icons/png/html-0.png" alt="1UI.dev" onError={onImgError} />
                   <span>1UI.dev</span>
                 </a>
                 <a
@@ -171,7 +172,7 @@ export default function Home() {
                   className="folder-item"
                   style={{ textDecoration: "none", color: "inherit" }}
                 >
-                  <img src="https://win98icons.alexmeub.com/icons/png/html-0.png" alt="Apichecker.io" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+                  <img src="https://win98icons.alexmeub.com/icons/png/html-0.png" alt="Apichecker.io" onError={onImgError} />
                   <span>Apichecker.io</span>
                 </a>
               </div>
@@ -195,7 +196,7 @@ export default function Home() {
                   className="project-card"
                   style={{ textDecoration: "none", color: "inherit" }}
                 >
-                  <img src="/modern-ui-component-library-design-system.jpg" alt="1UI.dev" className="project-img" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+                  <img src={asset("/modern-ui-component-library-design-system.jpg")} alt="1UI.dev" className="project-img" onError={onImgError} />
                   <div className="project-info">
                     <h3 className="project-title">1UI.dev</h3>
                     <div>
@@ -211,7 +212,7 @@ export default function Home() {
                   className="project-card"
                   style={{ textDecoration: "none", color: "inherit" }}
                 >
-                  <img src="/api-testing-monitoring-dashboard-interface.jpg" alt="Apichecker.io" className="project-img" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+                  <img src={asset("/api-testing-monitoring-dashboard-interface.jpg")} alt="Apichecker.io" className="project-img" onError={onImgError} />
                   <div className="project-info">
                     <h3 className="project-title">Apichecker.io</h3>
                     <div>
@@ -275,7 +276,7 @@ export default function Home() {
                   className="folder-item"
                   style={{ textDecoration: "none", color: "inherit", padding: "4px 8px" }}
                 >
-                  <img src="https://win98icons.alexmeub.com/icons/png/html-0.png" alt="Project" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+                  <img src="https://win98icons.alexmeub.com/icons/png/html-0.png" alt="Project" onError={onImgError} />
                   <span>1UI.dev</span>
                 </a>
                 <a
@@ -285,7 +286,7 @@ export default function Home() {
                   className="folder-item"
                   style={{ textDecoration: "none", color: "inherit", padding: "4px 8px" }}
                 >
-                  <img src="https://win98icons.alexmeub.com/icons/png/html-0.png" alt="Project" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+                  <img src="https://win98icons.alexmeub.com/icons/png/html-0.png" alt="Project" onError={onImgError} />
                   <span>Apichecker.io</span>
                 </a>
               </div>
@@ -303,21 +304,21 @@ export default function Home() {
             <div className="window-content">
               <div className="computer-drives">
                 <div className="drive-item">
-                  <img src="https://win98icons.alexmeub.com/icons/png/cd_drive-4.png" alt="C Drive" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+                  <img src="https://win98icons.alexmeub.com/icons/png/cd_drive-4.png" alt="C Drive" onError={onImgError} />
                   <div>
                     <div className="drive-label">(C:)</div>
                     <div className="drive-name">Local Disk</div>
                   </div>
                 </div>
                 <div className="drive-item">
-                  <img src="https://win98icons.alexmeub.com/icons/png/cd_drive-4.png" alt="D Drive" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+                  <img src="https://win98icons.alexmeub.com/icons/png/cd_drive-4.png" alt="D Drive" onError={onImgError} />
                   <div>
                     <div className="drive-label">(D:)</div>
                     <div className="drive-name">CD-ROM</div>
                   </div>
                 </div>
                 <div className="drive-item">
-                  <img src="https://win98icons.alexmeub.com/icons/png/cd_drive-4.png" alt="A Drive" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+                  <img src="https://win98icons.alexmeub.com/icons/png/cd_drive-4.png" alt="A Drive" onError={onImgError} />
                   <div>
                     <div className="drive-label">(A:)</div>
                     <div className="drive-name">3½ Floppy</div>
@@ -340,7 +341,7 @@ export default function Home() {
                 <img
                   src="https://win98icons.alexmeub.com/icons/png/recycle_bin_empty-4.png"
                   alt="Empty"
-                  style={{ width: "64px", height: "64px", imageRendering: "pixelated" }} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }}
+                  style={{ width: "64px", height: "64px", imageRendering: "pixelated" }} onError={onImgError}
                 />
                 <p>The Recycle Bin is empty.</p>
               </div>
@@ -361,8 +362,8 @@ export default function Home() {
       {/* Desktop icons column */}
       <div className="desktop-icons">
         {desktopIcons.map((type) => (
-          <button key={type} onDoubleClick={() => open(type)} onClick={() => open(type)} className="icon-item">
-            <img src={WINDOWS[type].icon || "/placeholder.svg"} alt={WINDOWS[type].title} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+          <button key={type} onClick={() => open(type)} className="icon-item">
+            <img src={WINDOWS[type].icon || asset("/placeholder.svg")} alt={WINDOWS[type].title} onError={onImgError} />
             <span>{WINDOWS[type].title}</span>
           </button>
         ))}
@@ -390,7 +391,7 @@ export default function Home() {
       {/* Taskbar */}
       <div className="taskbar">
         <button className="start-btn" onClick={() => setIsStartMenuOpen(!isStartMenuOpen)}>
-          <img src="https://win98icons.alexmeub.com/icons/png/windows-0.png" alt="Start" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+          <img src="https://win98icons.alexmeub.com/icons/png/windows-0.png" alt="Start" onError={onImgError} />
           <span className="start-text">Start</span>
         </button>
 
@@ -403,29 +404,29 @@ export default function Home() {
             <div className="start-menu-items">
               {(["portfolio", "projects", "about", "documents", "computer"] as WindowType[]).map((type) => (
                 <button key={type} onClick={() => open(type)} className="start-menu-item">
-                  <img src={WINDOWS[type].icon || "/placeholder.svg"} alt={WINDOWS[type].title} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+                  <img src={WINDOWS[type].icon || asset("/placeholder.svg")} alt={WINDOWS[type].title} onError={onImgError} />
                   <span>{WINDOWS[type].title}</span>
                 </button>
               ))}
               <div className="start-menu-separator"></div>
-              <a href="#" className="start-menu-item">
-                <img src="https://win98icons.alexmeub.com/icons/png/settings_gear-0.png" alt="Settings" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+              <button type="button" className="start-menu-item">
+                <img src="https://win98icons.alexmeub.com/icons/png/settings_gear-0.png" alt="Settings" onError={onImgError} />
                 <span>Settings</span>
-              </a>
+              </button>
               <div className="start-menu-separator"></div>
-              <a href="#" className="start-menu-item">
-                <img src="https://win98icons.alexmeub.com/icons/png/shut_down_with_computer-0.png" alt="Shut Down" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+              <button type="button" className="start-menu-item">
+                <img src="https://win98icons.alexmeub.com/icons/png/shut_down_with_computer-0.png" alt="Shut Down" onError={onImgError} />
                 <span>Shut Down...</span>
-              </a>
+              </button>
             </div>
           </div>
         )}
 
         {/* Quick launch */}
         <div className="quick-launch">
-          <img src="https://win98icons.alexmeub.com/icons/png/msie1-2.png" alt="Internet Explorer" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
-          <img src="https://win98icons.alexmeub.com/icons/png/channels-3.png" alt="Channels" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
-          <img src="https://win98icons.alexmeub.com/icons/png/desktop-0.png" alt="Show Desktop" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+          <img src="https://win98icons.alexmeub.com/icons/png/msie1-2.png" alt="Internet Explorer" onError={onImgError} />
+          <img src="https://win98icons.alexmeub.com/icons/png/channels-3.png" alt="Channels" onError={onImgError} />
+          <img src="https://win98icons.alexmeub.com/icons/png/desktop-0.png" alt="Show Desktop" onError={onImgError} />
         </div>
 
         {/* Open window buttons */}
@@ -436,7 +437,7 @@ export default function Home() {
               className={`taskbar-window-btn${!minimized[type] && stack[stack.length - 1] === type ? " active" : ""}`}
               onClick={() => taskbarClick(type)}
             >
-              <img src={WINDOWS[type].icon || "/placeholder.svg"} alt="" className="taskbar-icon" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+              <img src={WINDOWS[type].icon || asset("/placeholder.svg")} alt="" className="taskbar-icon" onError={onImgError} />
               <span>{WINDOWS[type].title}</span>
             </button>
           ))}
