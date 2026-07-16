@@ -4,83 +4,18 @@ import { useEffect, useState, type ReactNode } from "react"
 import { WinWindow } from "@/components/win-window"
 import { TaskbarClock } from "@/components/taskbar-clock"
 import { asset, onImgError } from "@/lib/utils"
+import { site, type WindowKey } from "@/site.config"
 
-type WindowType = "computer" | "documents" | "recycle" | "projects" | "about" | "portfolio" | "hero"
+const { windows: WINDOWS, sections } = site
 
-const WINDOWS: Record<WindowType, { title: string; icon: string; initial: { x: number; y: number; w: number; h: number } }> = {
-  hero: { title: "Welcome to Windows 98", icon: "https://win98icons.alexmeub.com/icons/png/windows-0.png", initial: { x: 120, y: 60, w: 560, h: 400 } },
-  portfolio: { title: "Portfolio", icon: "https://win98icons.alexmeub.com/icons/png/computer_explorer-5.png", initial: { x: 200, y: 90, w: 480, h: 360 } },
-  projects: { title: "My Projects", icon: "https://win98icons.alexmeub.com/icons/png/directory_open_file_mydocs-4.png", initial: { x: 240, y: 110, w: 580, h: 420 } },
-  about: { title: "About Me", icon: "https://win98icons.alexmeub.com/icons/png/notepad-3.png", initial: { x: 220, y: 80, w: 560, h: 470 } },
-  documents: { title: "Contact", icon: "https://win98icons.alexmeub.com/icons/png/html-0.png", initial: { x: 260, y: 120, w: 420, h: 340 } },
-  computer: { title: "My Computer", icon: "https://win98icons.alexmeub.com/icons/png/cd_drive-4.png", initial: { x: 280, y: 100, w: 460, h: 360 } },
-  recycle: { title: "Recycle Bin", icon: "https://win98icons.alexmeub.com/icons/png/recycle_bin_full-4.png", initial: { x: 300, y: 140, w: 420, h: 300 } },
-}
-
-// ─── CONTENT — fill in the [TODO] fields with your real details ───────────────
-type Project = {
-  title: string
-  url: string
-  image: string
-  tags: string[]
-  blurb: string
-  role: string
-  result: string
-}
-
-const PROJECTS: Project[] = [
-  {
-    title: "1UI.dev",
-    url: "https://1ui.dev",
-    image: "/modern-ui-component-library-design-system.jpg",
-    tags: ["React", "UI Library"],
-    blurb: "[TODO: one sentence — what 1UI.dev is and who it's for]",
-    role: "[TODO: your role, e.g. Solo builder / Lead frontend]",
-    result: "[TODO: a concrete outcome — users, stars, launch, revenue]",
-  },
-  {
-    title: "Apichecker.io",
-    url: "https://apichecker.io",
-    image: "/api-testing-monitoring-dashboard-interface.jpg",
-    tags: ["API", "Testing"],
-    blurb: "[TODO: one sentence — what Apichecker.io does]",
-    role: "[TODO: your role]",
-    result: "[TODO: a concrete outcome / traction]",
-  },
-  // [TODO: add more projects by copying the shape above]
-]
-
-type ContactLink = { label: string; href: string; icon: string }
-
-const CONTACTS: ContactLink[] = [
-  { label: "[TODO] you@email.com", href: "mailto:TODO@example.com", icon: "https://win98icons.alexmeub.com/icons/png/outlook_express-4.png" },
-  { label: "[TODO] GitHub", href: "https://github.com/TODO", icon: "https://win98icons.alexmeub.com/icons/png/html-0.png" },
-  { label: "[TODO] LinkedIn", href: "https://linkedin.com/in/TODO", icon: "https://win98icons.alexmeub.com/icons/png/html-0.png" },
-  { label: "[TODO] X / Twitter", href: "https://x.com/TODO", icon: "https://win98icons.alexmeub.com/icons/png/html-0.png" },
-  { label: "jess.vc", href: "https://jess.vc", icon: "https://win98icons.alexmeub.com/icons/png/html-0.png" },
-]
-
-const MENU_BAR = (
-  <div className="menu-bar">
-    <span>
-      <u>F</u>ile
-    </span>
-    <span>
-      <u>E</u>dit
-    </span>
-    <span>
-      <u>V</u>iew
-    </span>
-    <span>
-      <u>H</u>elp
-    </span>
-  </div>
-)
+/** Base URL for the third-party Win98 icon set used by the desktop chrome. */
+const ICON = "https://win98icons.alexmeub.com/icons/png"
 
 export default function Home() {
   const [isStartMenuOpen, setIsStartMenuOpen] = useState(false)
-  const [stack, setStack] = useState<WindowType[]>(["hero"])
-  const [minimized, setMinimized] = useState<Partial<Record<WindowType, boolean>>>({})
+  const [stack, setStack] = useState<WindowKey[]>([sections.initial])
+  const [minimized, setMinimized] = useState<Partial<Record<WindowKey, boolean>>>({})
+  const [isShutdown, setIsShutdown] = useState(false)
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -93,22 +28,22 @@ export default function Home() {
     return () => document.removeEventListener("click", handleClickOutside)
   }, [])
 
-  const focus = (type: WindowType) => setStack((s) => [...s.filter((w) => w !== type), type])
+  const focus = (type: WindowKey) => setStack((s) => [...s.filter((w) => w !== type), type])
 
-  const open = (type: WindowType) => {
+  const open = (type: WindowKey) => {
     setMinimized((m) => ({ ...m, [type]: false }))
     setStack((s) => [...s.filter((w) => w !== type), type])
     setIsStartMenuOpen(false)
   }
 
-  const close = (type: WindowType) => {
+  const close = (type: WindowKey) => {
     setStack((s) => s.filter((w) => w !== type))
     setMinimized((m) => ({ ...m, [type]: false }))
   }
 
-  const minimize = (type: WindowType) => setMinimized((m) => ({ ...m, [type]: true }))
+  const minimize = (type: WindowKey) => setMinimized((m) => ({ ...m, [type]: true }))
 
-  const taskbarClick = (type: WindowType) => {
+  const taskbarClick = (type: WindowKey) => {
     if (minimized[type]) {
       open(type)
     } else if (stack[stack.length - 1] === type) {
@@ -118,17 +53,36 @@ export default function Home() {
     }
   }
 
-  const renderBody = (type: WindowType): ReactNode => {
+  const shutDown = () => {
+    setIsStartMenuOpen(false)
+    setIsShutdown(true)
+  }
+
+  // File/Edit/View are period chrome; Help is wired to open the Help window.
+  const menuBar = (
+    <div className="menu-bar">
+      <span>
+        <u>F</u>ile
+      </span>
+      <span>
+        <u>E</u>dit
+      </span>
+      <span>
+        <u>V</u>iew
+      </span>
+      <button type="button" className="menu-bar-item" onClick={() => open("help")}>
+        <u>H</u>elp
+      </button>
+    </div>
+  )
+
+  const renderBody = (type: WindowKey): ReactNode => {
     switch (type) {
       case "hero":
         return (
           <div className="welcome-body">
             <div className="welcome-banner">
-              <img
-                src="https://win98icons.alexmeub.com/icons/png/windows-0.png"
-                alt=""
-                className="welcome-flag" onError={onImgError}
-              />
+              <img src={`${ICON}/windows-0.png`} alt="" className="welcome-flag" onError={onImgError} />
               <div className="welcome-banner-text">
                 <span className="welcome-ms">Microsoft</span>
                 <span className="welcome-win">
@@ -140,29 +94,18 @@ export default function Home() {
             <div className="welcome-main">
               <div className="welcome-contents">
                 <div className="welcome-contents-title">CONTENTS</div>
-                <button className="welcome-link blue" onClick={() => open("projects")}>
-                  My Projects
-                </button>
-                <button className="welcome-link red" onClick={() => open("portfolio")}>
-                  View Portfolio
-                </button>
-                <button className="welcome-link green" onClick={() => open("about")}>
-                  About Me
-                </button>
-                <button className="welcome-link yellow" onClick={() => open("documents")}>
-                  Links &amp; Contact
-                </button>
+                {site.welcome.contents.map((c) => (
+                  <button key={c.target} className={`welcome-link ${c.color}`} onClick={() => open(c.target)}>
+                    {c.label}
+                  </button>
+                ))}
               </div>
               <div className="welcome-text">
-                <h2 className="welcome-heading">Welcome</h2>
-                <p>
-                  Welcome to the creative world of Jessin Sam S, where design meets development on the desktop you know
-                  and love.
-                </p>
-                <p>
-                  Sit back and relax as you take a brief tour of the projects and work available on this screen.
-                </p>
-                <p>If you want to explore an option, just click it.</p>
+                <h2 className="welcome-heading">{site.welcome.heading}</h2>
+                {site.welcome.paragraphs.map((p, i) => (
+                  <p key={i}>{p}</p>
+                ))}
+                {site.welcome.tip && <p className="welcome-tip">{site.welcome.tip}</p>}
               </div>
             </div>
             <div className="welcome-footer">
@@ -178,24 +121,23 @@ export default function Home() {
       case "portfolio":
         return (
           <>
-            {MENU_BAR}
+            {menuBar}
             <div className="window-content">
               <p style={{ marginBottom: 12 }}>
                 My full, up-to-date portfolio lives at{" "}
                 <a
-                  href="https://jess.vc"
+                  href={site.portfolio.externalUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{ color: "var(--accent-red)", fontWeight: "bold" }}
                 >
-                  jess.vc
+                  {site.portfolio.externalLabel}
                 </a>
                 .
               </p>
-              <p style={{ marginBottom: 16 }}>[TODO: a line or two on what visitors will find there.]</p>
-              {/* [TODO: drop your CV at public/resume.pdf, or point href to an external link] */}
+              <p style={{ marginBottom: 16 }}>{site.portfolio.intro}</p>
               <a
-                href={asset("/resume.pdf")}
+                href={asset(site.portfolio.resumePath)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="button-retro"
@@ -205,7 +147,7 @@ export default function Home() {
               </a>
             </div>
             <div className="status-bar">
-              <span>jess.vc</span>
+              <span>{site.portfolio.externalLabel}</span>
               <span>Portfolio</span>
             </div>
           </>
@@ -213,10 +155,10 @@ export default function Home() {
       case "projects":
         return (
           <>
-            {MENU_BAR}
+            {menuBar}
             <div className="window-content">
               <div className="project-grid-modal">
-                {PROJECTS.map((p) => (
+                {site.projects.map((p) => (
                   <a
                     key={p.title}
                     href={p.url}
@@ -248,7 +190,7 @@ export default function Home() {
               </div>
             </div>
             <div className="status-bar">
-              <span>{PROJECTS.length} items</span>
+              <span>{site.projects.length} items</span>
               <span>Ready</span>
             </div>
           </>
@@ -256,28 +198,22 @@ export default function Home() {
       case "about":
         return (
           <>
-            {MENU_BAR}
+            {menuBar}
             <div className="window-content">
               <div className="about-content-modal">
-                <h2 className="about-title">[TODO: Your name and a real one-line title]</h2>
-                <p className="about-description">
-                  [TODO: 2 to 3 sentences, first person. Who you are, what you actually build, the stack you
-                  reach for, where you&apos;re based, and the kind of work you want. Name real tools and years;
-                  skip adjectives like &quot;passionate&quot; and &quot;creative&quot;.]
-                </p>
+                <h2 className="about-title">{site.about.title}</h2>
+                {site.about.bio.map((p, i) => (
+                  <p key={i} className="about-description">
+                    {p}
+                  </p>
+                ))}
                 <div className="skills-grid">
-                  <div className="skill-card">
-                    <h3 className="skill-title">[TODO: Skill area 1]</h3>
-                    <p className="skill-description">[TODO: concrete tools and frameworks, not adjectives.]</p>
-                  </div>
-                  <div className="skill-card">
-                    <h3 className="skill-title">[TODO: Skill area 2]</h3>
-                    <p className="skill-description">[TODO: concrete tools and frameworks.]</p>
-                  </div>
-                  <div className="skill-card">
-                    <h3 className="skill-title">[TODO: Skill area 3]</h3>
-                    <p className="skill-description">[TODO: concrete tools and frameworks.]</p>
-                  </div>
+                  {site.about.skills.map((s) => (
+                    <div key={s.title} className="skill-card">
+                      <h3 className="skill-title">{s.title}</h3>
+                      <p className="skill-description">{s.description}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -290,10 +226,10 @@ export default function Home() {
       case "documents":
         return (
           <>
-            {MENU_BAR}
+            {menuBar}
             <div className="window-content">
               <div className="folder-list">
-                {CONTACTS.map((c) => (
+                {site.contacts.map((c) => (
                   <a
                     key={c.label}
                     href={c.href}
@@ -309,33 +245,59 @@ export default function Home() {
               </div>
             </div>
             <div className="status-bar">
-              <span>{CONTACTS.length} object(s)</span>
+              <span>{site.contacts.length} object(s)</span>
               <span>Contact</span>
+            </div>
+          </>
+        )
+      case "help":
+        return (
+          <>
+            {menuBar}
+            <div className="window-content">
+              <div className="help-content">
+                <div className="help-header">
+                  <img src={`${ICON}/help_book_cool-0.png`} alt="" onError={onImgError} />
+                  <p>{site.help.intro}</p>
+                </div>
+                <ol className="help-steps">
+                  {site.help.steps.map((s, i) => (
+                    <li key={i}>{s}</li>
+                  ))}
+                </ol>
+                <button type="button" className="button-retro" onClick={() => open("hero")}>
+                  {site.help.showWelcomeLabel}
+                </button>
+              </div>
+            </div>
+            <div className="status-bar">
+              <span>Help</span>
+              <span>Ready</span>
             </div>
           </>
         )
       case "computer":
         return (
           <>
-            {MENU_BAR}
+            {menuBar}
             <div className="window-content">
               <div className="computer-drives">
                 <div className="drive-item">
-                  <img src="https://win98icons.alexmeub.com/icons/png/cd_drive-4.png" alt="C Drive" onError={onImgError} />
+                  <img src={`${ICON}/cd_drive-4.png`} alt="C Drive" onError={onImgError} />
                   <div>
                     <div className="drive-label">(C:)</div>
                     <div className="drive-name">Local Disk</div>
                   </div>
                 </div>
                 <div className="drive-item">
-                  <img src="https://win98icons.alexmeub.com/icons/png/cd_drive-4.png" alt="D Drive" onError={onImgError} />
+                  <img src={`${ICON}/cd_drive-4.png`} alt="D Drive" onError={onImgError} />
                   <div>
                     <div className="drive-label">(D:)</div>
                     <div className="drive-name">CD-ROM</div>
                   </div>
                 </div>
                 <div className="drive-item">
-                  <img src="https://win98icons.alexmeub.com/icons/png/cd_drive-4.png" alt="A Drive" onError={onImgError} />
+                  <img src={`${ICON}/cd_drive-4.png`} alt="A Drive" onError={onImgError} />
                   <div>
                     <div className="drive-label">(A:)</div>
                     <div className="drive-name">3½ Floppy</div>
@@ -352,13 +314,14 @@ export default function Home() {
       case "recycle":
         return (
           <>
-            {MENU_BAR}
+            {menuBar}
             <div className="window-content">
               <div className="recycle-empty">
                 <img
-                  src="https://win98icons.alexmeub.com/icons/png/recycle_bin_empty-4.png"
+                  src={`${ICON}/recycle_bin_empty-4.png`}
                   alt="Empty"
-                  style={{ width: "64px", height: "64px", imageRendering: "pixelated" }} onError={onImgError}
+                  style={{ width: "64px", height: "64px", imageRendering: "pixelated" }}
+                  onError={onImgError}
                 />
                 <p>The Recycle Bin is empty.</p>
               </div>
@@ -372,14 +335,39 @@ export default function Home() {
     }
   }
 
-  const desktopIcons: WindowType[] = ["portfolio", "projects", "about", "documents", "computer", "recycle"]
+  const wallpaper = site.theme.wallpaper
+  const desktopStyle = wallpaper
+    ? wallpaper.startsWith("/")
+      ? { backgroundImage: `url(${asset(wallpaper)})`, backgroundSize: "cover", backgroundPosition: "center" }
+      : { background: wallpaper }
+    : undefined
 
   return (
-    <main className="desktop">
-      <h1 className="sr-only">Portfolio of Jessin Sam S</h1>
+    <main className="desktop" style={desktopStyle}>
+      <h1 className="sr-only">Portfolio of {site.identity.name}</h1>
+
+      {isShutdown && (
+        <div
+          className="shutdown-screen"
+          role="button"
+          tabIndex={0}
+          aria-label={site.shutdown.restartLabel}
+          onClick={() => window.location.reload()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") window.location.reload()
+          }}
+        >
+          <div className="shutdown-text">
+            <p className="shutdown-message">{site.shutdown.message}</p>
+            <p className="shutdown-signoff">{site.shutdown.signoff}</p>
+            <p className="shutdown-restart">{site.shutdown.restartLabel}</p>
+          </div>
+        </div>
+      )}
+
       {/* Desktop icons column */}
       <div className="desktop-icons">
-        {desktopIcons.map((type) => (
+        {sections.desktopIcons.map((type) => (
           <button key={type} onClick={() => open(type)} className="icon-item">
             <img src={WINDOWS[type].icon || asset("/placeholder.svg")} alt={WINDOWS[type].title} onError={onImgError} />
             <span>{WINDOWS[type].title}</span>
@@ -409,7 +397,7 @@ export default function Home() {
       {/* Taskbar */}
       <div className="taskbar">
         <button className="start-btn" onClick={() => setIsStartMenuOpen(!isStartMenuOpen)}>
-          <img src="https://win98icons.alexmeub.com/icons/png/windows-0.png" alt="Start" onError={onImgError} />
+          <img src={`${ICON}/windows-0.png`} alt="Start" onError={onImgError} />
           <span className="start-text">Start</span>
         </button>
 
@@ -420,20 +408,15 @@ export default function Home() {
               <span className="windows-version">98</span>
             </div>
             <div className="start-menu-items">
-              {(["portfolio", "projects", "about", "documents", "computer"] as WindowType[]).map((type) => (
+              {sections.startMenu.map((type) => (
                 <button key={type} onClick={() => open(type)} className="start-menu-item">
                   <img src={WINDOWS[type].icon || asset("/placeholder.svg")} alt={WINDOWS[type].title} onError={onImgError} />
                   <span>{WINDOWS[type].title}</span>
                 </button>
               ))}
               <div className="start-menu-separator"></div>
-              <button type="button" className="start-menu-item">
-                <img src="https://win98icons.alexmeub.com/icons/png/settings_gear-0.png" alt="Settings" onError={onImgError} />
-                <span>Settings</span>
-              </button>
-              <div className="start-menu-separator"></div>
-              <button type="button" className="start-menu-item">
-                <img src="https://win98icons.alexmeub.com/icons/png/shut_down_with_computer-0.png" alt="Shut Down" onError={onImgError} />
+              <button type="button" className="start-menu-item" onClick={shutDown}>
+                <img src={`${ICON}/shut_down_with_computer-0.png`} alt="Shut Down" onError={onImgError} />
                 <span>Shut Down...</span>
               </button>
             </div>
@@ -442,9 +425,9 @@ export default function Home() {
 
         {/* Quick launch */}
         <div className="quick-launch">
-          <img src="https://win98icons.alexmeub.com/icons/png/msie1-2.png" alt="Internet Explorer" onError={onImgError} />
-          <img src="https://win98icons.alexmeub.com/icons/png/channels-3.png" alt="Channels" onError={onImgError} />
-          <img src="https://win98icons.alexmeub.com/icons/png/desktop-0.png" alt="Show Desktop" onError={onImgError} />
+          <img src={`${ICON}/msie1-2.png`} alt="Internet Explorer" onError={onImgError} />
+          <img src={`${ICON}/channels-3.png`} alt="Channels" onError={onImgError} />
+          <img src={`${ICON}/desktop-0.png`} alt="Show Desktop" onError={onImgError} />
         </div>
 
         {/* Open window buttons */}

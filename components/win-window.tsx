@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState, type ReactNode, type PointerEvent } from "react"
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode, type PointerEvent } from "react"
 import { onImgError } from "@/lib/utils"
 
 const VIEWPORT_MARGIN = 8
@@ -37,6 +37,7 @@ export function WinWindow({
 }: WinWindowProps) {
   const [pos, setPos] = useState({ x: initial.x, y: initial.y })
   const [size, setSize] = useState({ w: initial.w, h: initial.h })
+  const [maximized, setMaximized] = useState(false)
   // Drag moves via a compositor-only transform, then commits to left/top on release.
   const [dragDelta, setDragDelta] = useState<{ x: number; y: number } | null>(null)
   const dragStart = useRef<{ px: number; py: number } | null>(null)
@@ -58,6 +59,7 @@ export function WinWindow({
 
   const onHeaderDown = (e: PointerEvent) => {
     onFocus()
+    if (maximized) return
     dragStart.current = { px: e.clientX, py: e.clientY }
     setDragDelta({ x: 0, y: 0 })
     ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
@@ -91,10 +93,16 @@ export function WinWindow({
     resize.current = null
   }
 
-  return (
-    <div
-      className="window floating-window"
-      style={{
+  const winStyle: CSSProperties = maximized
+    ? {
+        left: 0,
+        top: 0,
+        width: "100vw",
+        height: `calc(100vh - ${TASKBAR_HEIGHT}px)`,
+        zIndex,
+        display: minimized ? "none" : "flex",
+      }
+    : {
         left: pos.x,
         top: pos.y,
         width: size.w,
@@ -102,11 +110,10 @@ export function WinWindow({
         zIndex,
         display: minimized ? "none" : "flex",
         transform: dragDelta ? `translate3d(${dragDelta.x}px, ${dragDelta.y}px, 0)` : undefined,
-      }}
-      onPointerDown={onFocus}
-      onPointerMove={onMove}
-      onPointerUp={onUp}
-    >
+      }
+
+  return (
+    <div className="window floating-window" style={winStyle} onPointerDown={onFocus} onPointerMove={onMove} onPointerUp={onUp}>
       <div className="window-header" onPointerDown={onHeaderDown} style={{ cursor: "move", touchAction: "none" }}>
         <span className="window-title-text">
           {icon && <img src={icon} alt="" onError={onImgError} />}
@@ -128,9 +135,19 @@ export function WinWindow({
             </button>
           )}
           {controls === "full" && (
-            <span className="win-btn-maximize" aria-hidden="true">
-              □
-            </span>
+            <button
+              type="button"
+              className="win-btn-maximize"
+              aria-label={maximized ? "Restore" : "Maximize"}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation()
+                onFocus()
+                setMaximized((m) => !m)
+              }}
+            >
+              {maximized ? "❐" : "□"}
+            </button>
           )}
           <button
             type="button"
@@ -147,7 +164,7 @@ export function WinWindow({
         </div>
       </div>
       {children}
-      {resizable && <div className="resize-handle" onPointerDown={onResizeDown} style={{ touchAction: "none" }} />}
+      {resizable && !maximized && <div className="resize-handle" onPointerDown={onResizeDown} style={{ touchAction: "none" }} />}
     </div>
   )
 }

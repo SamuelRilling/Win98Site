@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 250" role="img" aria-label="Sysmon 98 demo screenshot">
+  <rect width="400" height="250" fill="#008080"/>
+  <g>
+    <rect x="40" y="36" width="320" height="178" fill="#c0c0c0" stroke="#ffffff" stroke-width="2"/>
+    <rect x="41" y="37" width="318" height="176" fill="none" stroke="#404040" stroke-width="1"/>
+    <rect x="44" y="40" width="312" height="20" fill="#000080"/>
+    <text x="52" y="55" font-family="Tahoma, 'MS Sans Serif', sans-serif" font-size="12" fill="#ffffff" font-weight="bold">Sysmon 98</text>
+    <rect x="56" y="72" width="288" height="60" fill="#000000" stroke="#808080"/>
+    <polyline points="60,120 90,96 120,108 150,80 180,100 210,72 240,110 270,88 300,116 330,90" fill="none" stroke="#00ff00" stroke-width="2"/>
+    <text x="56" y="152" font-family="Tahoma, 'MS Sans Serif', sans-serif" font-size="11" fill="#000000">CPU Usage</text>
+    <rect x="56" y="160" width="288" height="16" fill="#ffffff" stroke="#808080"/>
+    <rect x="58" y="162" width="150" height="12" fill="#000080"/>
+    <text x="56" y="196" font-family="Tahoma, 'MS Sans Serif', sans-serif" font-size="11" fill="#000000">Memory</text>
+    <rect x="56" y="200" width="288" height="8" fill="#ffffff" stroke="#808080"/>
+    <rect x="58" y="201" width="210" height="6" fill="#000080"/>
+  </g>
+</svg>

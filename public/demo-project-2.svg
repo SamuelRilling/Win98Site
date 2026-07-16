@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 250" role="img" aria-label="Dialup Weather demo screenshot">
+  <rect width="400" height="250" fill="#000080"/>
+  <g>
+    <rect x="36" y="34" width="328" height="182" fill="#0a0a0a" stroke="#00a000" stroke-width="2"/>
+    <text x="52" y="60" font-family="'Courier New', monospace" font-size="13" fill="#33ff66">&gt; dialup-weather --now</text>
+    <text x="52" y="86" font-family="'Courier New', monospace" font-size="12" fill="#00c853">connecting at 56k ...... ok</text>
+    <text x="52" y="108" font-family="'Courier New', monospace" font-size="12" fill="#00c853">TODAY   [##########]  72F</text>
+    <text x="52" y="128" font-family="'Courier New', monospace" font-size="12" fill="#00c853">WIND    [####------]  8mph</text>
+    <text x="52" y="148" font-family="'Courier New', monospace" font-size="12" fill="#00c853">RAIN    [##--------]  20%</text>
+    <text x="52" y="176" font-family="'Courier New', monospace" font-size="12" fill="#33ff66">_</text>
+  </g>
+</svg>

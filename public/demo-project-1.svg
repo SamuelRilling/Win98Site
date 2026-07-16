@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 250" role="img" aria-label="PixelPad demo screenshot">
+  <rect width="400" height="250" fill="#008080"/>
+  <g>
+    <rect x="40" y="40" width="320" height="170" fill="#c0c0c0" stroke="#ffffff" stroke-width="2"/>
+    <rect x="41" y="41" width="318" height="168" fill="none" stroke="#404040" stroke-width="1"/>
+    <rect x="44" y="44" width="312" height="20" fill="#000080"/>
+    <text x="52" y="59" font-family="Tahoma, 'MS Sans Serif', sans-serif" font-size="12" fill="#ffffff" font-weight="bold">PixelPad.exe</text>
+    <rect x="338" y="47" width="14" height="14" fill="#c0c0c0" stroke="#404040"/>
+    <rect x="52" y="72" width="296" height="128" fill="#ffffff" stroke="#808080"/>
+    <rect x="64" y="86" width="180" height="8" fill="#000080"/>
+    <rect x="64" y="104" width="272" height="6" fill="#c0c0c0"/>
+    <rect x="64" y="118" width="248" height="6" fill="#c0c0c0"/>
+    <rect x="64" y="132" width="272" height="6" fill="#c0c0c0"/>
+    <rect x="64" y="146" width="200" height="6" fill="#c0c0c0"/>
+    <rect x="64" y="168" width="70" height="20" fill="#c0c0c0" stroke="#ffffff" stroke-width="1"/>
+    <text x="78" y="182" font-family="Tahoma, 'MS Sans Serif', sans-serif" font-size="10" fill="#000000">Save</text>
+  </g>
+</svg>
