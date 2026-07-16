@@ -4,9 +4,9 @@ A personal portfolio that boots as a nostalgic Windows 98 desktop: draggable, re
 
 You fill in **one file** (`site.config.ts`) and push. No build config to touch, no framework knowledge required.
 
+![The desktop with the Welcome dialog, desktop icons, and taskbar](docs/screenshot.png)
+
 > Live demo: `https://<your-username>.github.io/<your-repo>` (replace with your own once deployed).
->
-> Add a screenshot here once you deploy: `docs/screenshot.png`.
 
 ## Features
 
