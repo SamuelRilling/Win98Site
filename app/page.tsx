@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react"
 import { WinWindow } from "@/components/win-window"
+import { TaskbarClock } from "@/components/taskbar-clock"
 import { asset, onImgError } from "@/lib/utils"
 
 type WindowType = "computer" | "documents" | "recycle" | "projects" | "about" | "portfolio" | "hero"
@@ -37,13 +38,6 @@ export default function Home() {
   const [isStartMenuOpen, setIsStartMenuOpen] = useState(false)
   const [stack, setStack] = useState<WindowType[]>(["hero"])
   const [minimized, setMinimized] = useState<Partial<Record<WindowType, boolean>>>({})
-  const [time, setTime] = useState<Date | null>(null)
-
-  useEffect(() => {
-    setTime(new Date())
-    const id = setInterval(() => setTime(new Date()), 1000)
-    return () => clearInterval(id)
-  }, [])
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -358,7 +352,8 @@ export default function Home() {
   const desktopIcons: WindowType[] = ["portfolio", "projects", "about", "documents", "computer", "recycle"]
 
   return (
-    <div className="desktop">
+    <main className="desktop">
+      <h1 className="sr-only">Portfolio of Jessin Sam S</h1>
       {/* Desktop icons column */}
       <div className="desktop-icons">
         {desktopIcons.map((type) => (
@@ -443,12 +438,8 @@ export default function Home() {
           ))}
         </div>
 
-        <div className="taskbar-time">
-          <span className="time-text">
-            {time ? time.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }) : ""}
-          </span>
-        </div>
+        <TaskbarClock />
       </div>
-    </div>
+    </main>
   )
 }
