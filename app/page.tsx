@@ -2,47 +2,20 @@
 
 import { useEffect, useState, type ReactNode } from "react"
 import { WinWindow } from "@/components/win-window"
+import { TaskbarClock } from "@/components/taskbar-clock"
+import { asset, onImgError } from "@/lib/utils"
+import { site, type WindowKey } from "@/site.config"
 
-type WindowType = "computer" | "documents" | "recycle" | "projects" | "about" | "portfolio" | "hero"
+const { windows: WINDOWS, sections } = site
 
-const WINDOWS: Record<WindowType, { title: string; icon: string; initial: { x: number; y: number; w: number; h: number } }> = {
-  hero: { title: "Welcome to Windows 98", icon: "https://win98icons.alexmeub.com/icons/png/windows-0.png", initial: { x: 120, y: 60, w: 560, h: 400 } },
-  portfolio: { title: "Portfolio", icon: "https://win98icons.alexmeub.com/icons/png/computer_explorer-5.png", initial: { x: 200, y: 90, w: 480, h: 360 } },
-  projects: { title: "My Projects", icon: "https://win98icons.alexmeub.com/icons/png/directory_open_file_mydocs-4.png", initial: { x: 240, y: 110, w: 580, h: 420 } },
-  about: { title: "About Me", icon: "https://win98icons.alexmeub.com/icons/png/notepad-3.png", initial: { x: 220, y: 80, w: 560, h: 470 } },
-  documents: { title: "Links", icon: "https://win98icons.alexmeub.com/icons/png/html-0.png", initial: { x: 260, y: 120, w: 420, h: 320 } },
-  computer: { title: "My Computer", icon: "https://win98icons.alexmeub.com/icons/png/cd_drive-4.png", initial: { x: 280, y: 100, w: 460, h: 360 } },
-  recycle: { title: "Recycle Bin", icon: "https://win98icons.alexmeub.com/icons/png/recycle_bin_full-4.png", initial: { x: 300, y: 140, w: 420, h: 300 } },
-}
-
-const MENU_BAR = (
-  <div className="menu-bar">
-    <span>
-      <u>F</u>ile
-    </span>
-    <span>
-      <u>E</u>dit
-    </span>
-    <span>
-      <u>V</u>iew
-    </span>
-    <span>
-      <u>H</u>elp
-    </span>
-  </div>
-)
+/** Base URL for the third-party Win98 icon set used by the desktop chrome. */
+const ICON = "https://win98icons.alexmeub.com/icons/png"
 
 export default function Home() {
   const [isStartMenuOpen, setIsStartMenuOpen] = useState(false)
-  const [stack, setStack] = useState<WindowType[]>(["hero"])
-  const [minimized, setMinimized] = useState<Partial<Record<WindowType, boolean>>>({})
-  const [time, setTime] = useState<Date | null>(null)
-
-  useEffect(() => {
-    setTime(new Date())
-    const id = setInterval(() => setTime(new Date()), 1000)
-    return () => clearInterval(id)
-  }, [])
+  const [stack, setStack] = useState<WindowKey[]>([sections.initial])
+  const [minimized, setMinimized] = useState<Partial<Record<WindowKey, boolean>>>({})
+  const [isShutdown, setIsShutdown] = useState(false)
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -55,22 +28,22 @@ export default function Home() {
     return () => document.removeEventListener("click", handleClickOutside)
   }, [])
 
-  const focus = (type: WindowType) => setStack((s) => [...s.filter((w) => w !== type), type])
+  const focus = (type: WindowKey) => setStack((s) => [...s.filter((w) => w !== type), type])
 
-  const open = (type: WindowType) => {
+  const open = (type: WindowKey) => {
     setMinimized((m) => ({ ...m, [type]: false }))
     setStack((s) => [...s.filter((w) => w !== type), type])
     setIsStartMenuOpen(false)
   }
 
-  const close = (type: WindowType) => {
+  const close = (type: WindowKey) => {
     setStack((s) => s.filter((w) => w !== type))
     setMinimized((m) => ({ ...m, [type]: false }))
   }
 
-  const minimize = (type: WindowType) => setMinimized((m) => ({ ...m, [type]: true }))
+  const minimize = (type: WindowKey) => setMinimized((m) => ({ ...m, [type]: true }))
 
-  const taskbarClick = (type: WindowType) => {
+  const taskbarClick = (type: WindowKey) => {
     if (minimized[type]) {
       open(type)
     } else if (stack[stack.length - 1] === type) {
@@ -80,17 +53,36 @@ export default function Home() {
     }
   }
 
-  const renderBody = (type: WindowType): ReactNode => {
+  const shutDown = () => {
+    setIsStartMenuOpen(false)
+    setIsShutdown(true)
+  }
+
+  // File/Edit/View are period chrome; Help is wired to open the Help window.
+  const menuBar = (
+    <div className="menu-bar">
+      <span>
+        <u>F</u>ile
+      </span>
+      <span>
+        <u>E</u>dit
+      </span>
+      <span>
+        <u>V</u>iew
+      </span>
+      <button type="button" className="menu-bar-item" onClick={() => open("help")}>
+        <u>H</u>elp
+      </button>
+    </div>
+  )
+
+  const renderBody = (type: WindowKey): ReactNode => {
     switch (type) {
       case "hero":
         return (
           <div className="welcome-body">
             <div className="welcome-banner">
-              <img
-                src="https://win98icons.alexmeub.com/icons/png/windows-0.png"
-                alt=""
-                className="welcome-flag" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }}
-              />
+              <img src={`${ICON}/windows-0.png`} alt="" className="welcome-flag" onError={onImgError} />
               <div className="welcome-banner-text">
                 <span className="welcome-ms">Microsoft</span>
                 <span className="welcome-win">
@@ -102,29 +94,18 @@ export default function Home() {
             <div className="welcome-main">
               <div className="welcome-contents">
                 <div className="welcome-contents-title">CONTENTS</div>
-                <button className="welcome-link blue" onClick={() => open("projects")}>
-                  My Projects
-                </button>
-                <button className="welcome-link red" onClick={() => open("portfolio")}>
-                  View Portfolio
-                </button>
-                <button className="welcome-link green" onClick={() => open("about")}>
-                  About Me
-                </button>
-                <button className="welcome-link yellow" onClick={() => open("documents")}>
-                  Links &amp; Contact
-                </button>
+                {site.welcome.contents.map((c) => (
+                  <button key={c.target} className={`welcome-link ${c.color}`} onClick={() => open(c.target)}>
+                    {c.label}
+                  </button>
+                ))}
               </div>
               <div className="welcome-text">
-                <h2 className="welcome-heading">Welcome</h2>
-                <p>
-                  Welcome to the creative world of Jessin Sam S, where design meets development on the desktop you know
-                  and love.
-                </p>
-                <p>
-                  Sit back and relax as you take a brief tour of the projects and work available on this screen.
-                </p>
-                <p>If you want to explore an option, just click it.</p>
+                <h2 className="welcome-heading">{site.welcome.heading}</h2>
+                {site.welcome.paragraphs.map((p, i) => (
+                  <p key={i}>{p}</p>
+                ))}
+                {site.welcome.tip && <p className="welcome-tip">{site.welcome.tip}</p>}
               </div>
             </div>
             <div className="welcome-footer">
@@ -140,44 +121,33 @@ export default function Home() {
       case "portfolio":
         return (
           <>
-            {MENU_BAR}
+            {menuBar}
             <div className="window-content">
-              <p style={{ marginBottom: 16 }}>
-                Full portfolio available at{" "}
+              <p style={{ marginBottom: 12 }}>
+                My full, up-to-date portfolio lives at{" "}
                 <a
-                  href="https://jess.vc"
+                  href={site.portfolio.externalUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: "var(--xmas-red)", fontWeight: "bold" }}
+                  style={{ color: "var(--accent-red)", fontWeight: "bold" }}
                 >
-                  jess.vc
+                  {site.portfolio.externalLabel}
                 </a>
+                .
               </p>
-              <div className="folder-list">
-                <a
-                  href="https://1ui.dev"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="folder-item"
-                  style={{ textDecoration: "none", color: "inherit" }}
-                >
-                  <img src="https://win98icons.alexmeub.com/icons/png/html-0.png" alt="1UI.dev" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
-                  <span>1UI.dev</span>
-                </a>
-                <a
-                  href="https://apichecker.io"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="folder-item"
-                  style={{ textDecoration: "none", color: "inherit" }}
-                >
-                  <img src="https://win98icons.alexmeub.com/icons/png/html-0.png" alt="Apichecker.io" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
-                  <span>Apichecker.io</span>
-                </a>
-              </div>
+              <p style={{ marginBottom: 16 }}>{site.portfolio.intro}</p>
+              <a
+                href={asset(site.portfolio.resumePath)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="button-retro"
+                style={{ textDecoration: "none", display: "inline-block", color: "inherit" }}
+              >
+                Download résumé (CV)
+              </a>
             </div>
             <div className="status-bar">
-              <span>2 object(s)</span>
+              <span>{site.portfolio.externalLabel}</span>
               <span>Portfolio</span>
             </div>
           </>
@@ -185,45 +155,42 @@ export default function Home() {
       case "projects":
         return (
           <>
-            {MENU_BAR}
+            {menuBar}
             <div className="window-content">
               <div className="project-grid-modal">
-                <a
-                  href="https://1ui.dev"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="project-card"
-                  style={{ textDecoration: "none", color: "inherit" }}
-                >
-                  <img src="/modern-ui-component-library-design-system.jpg" alt="1UI.dev" className="project-img" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
-                  <div className="project-info">
-                    <h3 className="project-title">1UI.dev</h3>
-                    <div>
-                      <span className="tag">React</span>
-                      <span className="tag">UI Library</span>
+                {site.projects.map((p) => (
+                  <a
+                    key={p.title}
+                    href={p.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="project-card"
+                    style={{ textDecoration: "none", color: "inherit" }}
+                  >
+                    <img src={asset(p.image)} alt={p.title} className="project-img" onError={onImgError} />
+                    <div className="project-info">
+                      <h3 className="project-title">{p.title}</h3>
+                      <p className="project-blurb">{p.blurb}</p>
+                      <p className="project-meta">
+                        <strong>Role:</strong> {p.role}
+                      </p>
+                      <p className="project-meta">
+                        <strong>Result:</strong> {p.result}
+                      </p>
+                      <div className="project-tags">
+                        {p.tags.map((t) => (
+                          <span key={t} className="tag">
+                            {t}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                </a>
-                <a
-                  href="https://apichecker.io"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="project-card"
-                  style={{ textDecoration: "none", color: "inherit" }}
-                >
-                  <img src="/api-testing-monitoring-dashboard-interface.jpg" alt="Apichecker.io" className="project-img" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
-                  <div className="project-info">
-                    <h3 className="project-title">Apichecker.io</h3>
-                    <div>
-                      <span className="tag">API</span>
-                      <span className="tag">Testing</span>
-                    </div>
-                  </div>
-                </a>
+                  </a>
+                ))}
               </div>
             </div>
             <div className="status-bar">
-              <span>2 items</span>
+              <span>{site.projects.length} items</span>
               <span>Ready</span>
             </div>
           </>
@@ -231,33 +198,27 @@ export default function Home() {
       case "about":
         return (
           <>
-            {MENU_BAR}
+            {menuBar}
             <div className="window-content">
               <div className="about-content-modal">
-                <h2 className="about-title">Creative Professional</h2>
-                <p className="about-description">
-                  I&apos;m passionate about creating meaningful digital experiences that blend aesthetics with
-                  functionality. With expertise in design and development, I bring ideas to life through clean code and
-                  thoughtful interfaces.
-                </p>
+                <h2 className="about-title">{site.about.title}</h2>
+                {site.about.bio.map((p, i) => (
+                  <p key={i} className="about-description">
+                    {p}
+                  </p>
+                ))}
                 <div className="skills-grid">
-                  <div className="skill-card">
-                    <h3 className="skill-title">Design</h3>
-                    <p className="skill-description">Crafting beautiful, user-centered interfaces with attention to detail.</p>
-                  </div>
-                  <div className="skill-card">
-                    <h3 className="skill-title">Development</h3>
-                    <p className="skill-description">Building responsive, performant web applications with modern technologies.</p>
-                  </div>
-                  <div className="skill-card">
-                    <h3 className="skill-title">Creativity</h3>
-                    <p className="skill-description">Bringing fresh ideas and innovative solutions to every project.</p>
-                  </div>
+                  {site.about.skills.map((s) => (
+                    <div key={s.title} className="skill-card">
+                      <h3 className="skill-title">{s.title}</h3>
+                      <p className="skill-description">{s.description}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
             <div className="status-bar">
-              <span>Page 1 of 1</span>
+              <span>Readme.txt</span>
               <span>100%</span>
             </div>
           </>
@@ -265,59 +226,78 @@ export default function Home() {
       case "documents":
         return (
           <>
-            {MENU_BAR}
+            {menuBar}
             <div className="window-content">
               <div className="folder-list">
-                <a
-                  href="https://1ui.dev"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="folder-item"
-                  style={{ textDecoration: "none", color: "inherit", padding: "4px 8px" }}
-                >
-                  <img src="https://win98icons.alexmeub.com/icons/png/html-0.png" alt="Project" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
-                  <span>1UI.dev</span>
-                </a>
-                <a
-                  href="https://apichecker.io"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="folder-item"
-                  style={{ textDecoration: "none", color: "inherit", padding: "4px 8px" }}
-                >
-                  <img src="https://win98icons.alexmeub.com/icons/png/html-0.png" alt="Project" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
-                  <span>Apichecker.io</span>
-                </a>
+                {site.contacts.map((c) => (
+                  <a
+                    key={c.label}
+                    href={c.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="folder-item"
+                    style={{ textDecoration: "none", color: "inherit", padding: "4px 8px" }}
+                  >
+                    <img src={c.icon} alt="" onError={onImgError} />
+                    <span>{c.label}</span>
+                  </a>
+                ))}
               </div>
             </div>
             <div className="status-bar">
-              <span>2 object(s)</span>
-              <span>Links</span>
+              <span>{site.contacts.length} object(s)</span>
+              <span>Contact</span>
+            </div>
+          </>
+        )
+      case "help":
+        return (
+          <>
+            {menuBar}
+            <div className="window-content">
+              <div className="help-content">
+                <div className="help-header">
+                  <img src={`${ICON}/help_book_cool-0.png`} alt="" onError={onImgError} />
+                  <p>{site.help.intro}</p>
+                </div>
+                <ol className="help-steps">
+                  {site.help.steps.map((s, i) => (
+                    <li key={i}>{s}</li>
+                  ))}
+                </ol>
+                <button type="button" className="button-retro" onClick={() => open("hero")}>
+                  {site.help.showWelcomeLabel}
+                </button>
+              </div>
+            </div>
+            <div className="status-bar">
+              <span>Help</span>
+              <span>Ready</span>
             </div>
           </>
         )
       case "computer":
         return (
           <>
-            {MENU_BAR}
+            {menuBar}
             <div className="window-content">
               <div className="computer-drives">
                 <div className="drive-item">
-                  <img src="https://win98icons.alexmeub.com/icons/png/cd_drive-4.png" alt="C Drive" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+                  <img src={`${ICON}/cd_drive-4.png`} alt="C Drive" onError={onImgError} />
                   <div>
                     <div className="drive-label">(C:)</div>
                     <div className="drive-name">Local Disk</div>
                   </div>
                 </div>
                 <div className="drive-item">
-                  <img src="https://win98icons.alexmeub.com/icons/png/cd_drive-4.png" alt="D Drive" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+                  <img src={`${ICON}/cd_drive-4.png`} alt="D Drive" onError={onImgError} />
                   <div>
                     <div className="drive-label">(D:)</div>
                     <div className="drive-name">CD-ROM</div>
                   </div>
                 </div>
                 <div className="drive-item">
-                  <img src="https://win98icons.alexmeub.com/icons/png/cd_drive-4.png" alt="A Drive" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+                  <img src={`${ICON}/cd_drive-4.png`} alt="A Drive" onError={onImgError} />
                   <div>
                     <div className="drive-label">(A:)</div>
                     <div className="drive-name">3½ Floppy</div>
@@ -334,13 +314,14 @@ export default function Home() {
       case "recycle":
         return (
           <>
-            {MENU_BAR}
+            {menuBar}
             <div className="window-content">
               <div className="recycle-empty">
                 <img
-                  src="https://win98icons.alexmeub.com/icons/png/recycle_bin_empty-4.png"
+                  src={`${ICON}/recycle_bin_empty-4.png`}
                   alt="Empty"
-                  style={{ width: "64px", height: "64px", imageRendering: "pixelated" }} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }}
+                  style={{ width: "64px", height: "64px", imageRendering: "pixelated" }}
+                  onError={onImgError}
                 />
                 <p>The Recycle Bin is empty.</p>
               </div>
@@ -354,15 +335,41 @@ export default function Home() {
     }
   }
 
-  const desktopIcons: WindowType[] = ["portfolio", "projects", "about", "documents", "computer", "recycle"]
+  const wallpaper = site.theme.wallpaper
+  const desktopStyle = wallpaper
+    ? wallpaper.startsWith("/")
+      ? { backgroundImage: `url(${asset(wallpaper)})`, backgroundSize: "cover", backgroundPosition: "center" }
+      : { background: wallpaper }
+    : undefined
 
   return (
-    <div className="desktop">
+    <main className="desktop" style={desktopStyle}>
+      <h1 className="sr-only">Portfolio of {site.identity.name}</h1>
+
+      {isShutdown && (
+        <div
+          className="shutdown-screen"
+          role="button"
+          tabIndex={0}
+          aria-label={site.shutdown.restartLabel}
+          onClick={() => window.location.reload()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") window.location.reload()
+          }}
+        >
+          <div className="shutdown-text">
+            <p className="shutdown-message">{site.shutdown.message}</p>
+            <p className="shutdown-signoff">{site.shutdown.signoff}</p>
+            <p className="shutdown-restart">{site.shutdown.restartLabel}</p>
+          </div>
+        </div>
+      )}
+
       {/* Desktop icons column */}
       <div className="desktop-icons">
-        {desktopIcons.map((type) => (
-          <button key={type} onDoubleClick={() => open(type)} onClick={() => open(type)} className="icon-item">
-            <img src={WINDOWS[type].icon || "/placeholder.svg"} alt={WINDOWS[type].title} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+        {sections.desktopIcons.map((type) => (
+          <button key={type} onClick={() => open(type)} className="icon-item">
+            <img src={WINDOWS[type].icon || asset("/placeholder.svg")} alt={WINDOWS[type].title} onError={onImgError} />
             <span>{WINDOWS[type].title}</span>
           </button>
         ))}
@@ -390,7 +397,7 @@ export default function Home() {
       {/* Taskbar */}
       <div className="taskbar">
         <button className="start-btn" onClick={() => setIsStartMenuOpen(!isStartMenuOpen)}>
-          <img src="https://win98icons.alexmeub.com/icons/png/windows-0.png" alt="Start" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+          <img src={`${ICON}/windows-0.png`} alt="Start" onError={onImgError} />
           <span className="start-text">Start</span>
         </button>
 
@@ -401,31 +408,26 @@ export default function Home() {
               <span className="windows-version">98</span>
             </div>
             <div className="start-menu-items">
-              {(["portfolio", "projects", "about", "documents", "computer"] as WindowType[]).map((type) => (
+              {sections.startMenu.map((type) => (
                 <button key={type} onClick={() => open(type)} className="start-menu-item">
-                  <img src={WINDOWS[type].icon || "/placeholder.svg"} alt={WINDOWS[type].title} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+                  <img src={WINDOWS[type].icon || asset("/placeholder.svg")} alt={WINDOWS[type].title} onError={onImgError} />
                   <span>{WINDOWS[type].title}</span>
                 </button>
               ))}
               <div className="start-menu-separator"></div>
-              <a href="#" className="start-menu-item">
-                <img src="https://win98icons.alexmeub.com/icons/png/settings_gear-0.png" alt="Settings" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
-                <span>Settings</span>
-              </a>
-              <div className="start-menu-separator"></div>
-              <a href="#" className="start-menu-item">
-                <img src="https://win98icons.alexmeub.com/icons/png/shut_down_with_computer-0.png" alt="Shut Down" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+              <button type="button" className="start-menu-item" onClick={shutDown}>
+                <img src={`${ICON}/shut_down_with_computer-0.png`} alt="Shut Down" onError={onImgError} />
                 <span>Shut Down...</span>
-              </a>
+              </button>
             </div>
           </div>
         )}
 
         {/* Quick launch */}
         <div className="quick-launch">
-          <img src="https://win98icons.alexmeub.com/icons/png/msie1-2.png" alt="Internet Explorer" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
-          <img src="https://win98icons.alexmeub.com/icons/png/channels-3.png" alt="Channels" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
-          <img src="https://win98icons.alexmeub.com/icons/png/desktop-0.png" alt="Show Desktop" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+          <img src={`${ICON}/msie1-2.png`} alt="Internet Explorer" onError={onImgError} />
+          <img src={`${ICON}/channels-3.png`} alt="Channels" onError={onImgError} />
+          <img src={`${ICON}/desktop-0.png`} alt="Show Desktop" onError={onImgError} />
         </div>
 
         {/* Open window buttons */}
@@ -436,18 +438,14 @@ export default function Home() {
               className={`taskbar-window-btn${!minimized[type] && stack[stack.length - 1] === type ? " active" : ""}`}
               onClick={() => taskbarClick(type)}
             >
-              <img src={WINDOWS[type].icon || "/placeholder.svg"} alt="" className="taskbar-icon" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+              <img src={WINDOWS[type].icon || asset("/placeholder.svg")} alt="" className="taskbar-icon" onError={onImgError} />
               <span>{WINDOWS[type].title}</span>
             </button>
           ))}
         </div>
 
-        <div className="taskbar-time">
-          <span className="time-text">
-            {time ? time.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }) : ""}
-          </span>
-        </div>
+        <TaskbarClock />
       </div>
-    </div>
+    </main>
   )
 }
