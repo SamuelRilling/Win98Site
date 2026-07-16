@@ -6,7 +6,6 @@ import "./globals.css"
 export const metadata: Metadata = {
   title: "Jessin Sam S — Portfolio",
   description: "The portfolio of Jessin Sam S, presented as a nostalgic Windows 98 desktop.",
-  generator: "v0.app",
   icons: {
     icon: [
       {

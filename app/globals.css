@@ -471,6 +471,21 @@ h1 {
   border-top: 1px solid var(--win-shadow);
 }
 
+.project-blurb {
+  margin: 4px 0 8px;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.project-meta {
+  margin: 2px 0;
+  font-size: 11px;
+}
+
+.project-tags {
+  margin-top: 8px;
+}
+
 .taskbar {
   position: fixed;
   bottom: 0px;
