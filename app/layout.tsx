@@ -1,27 +1,28 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { asset } from "@/lib/utils"
+import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 
 export const metadata: Metadata = {
   title: "Jessin Sam S — Portfolio",
   description: "The portfolio of Jessin Sam S, presented as a nostalgic Windows 98 desktop.",
+  generator: "v0.app",
   icons: {
     icon: [
       {
-        url: asset("/icon-light-32x32.png"),
+        url: "/icon-light-32x32.png",
         media: "(prefers-color-scheme: light)",
       },
       {
-        url: asset("/icon-dark-32x32.png"),
+        url: "/icon-dark-32x32.png",
         media: "(prefers-color-scheme: dark)",
       },
       {
-        url: asset("/icon.svg"),
+        url: "/icon.svg",
         type: "image/svg+xml",
       },
     ],
-    apple: asset("/apple-icon.png"),
+    apple: "/apple-icon.png",
   },
 }
 
@@ -34,6 +35,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased">
         {children}
+        <Analytics />
       </body>
     </html>
   )

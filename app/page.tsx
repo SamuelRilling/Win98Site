@@ -2,8 +2,6 @@
 
 import { useEffect, useState, type ReactNode } from "react"
 import { WinWindow } from "@/components/win-window"
-import { TaskbarClock } from "@/components/taskbar-clock"
-import { asset, onImgError } from "@/lib/utils"
 
 type WindowType = "computer" | "documents" | "recycle" | "projects" | "about" | "portfolio" | "hero"
 
@@ -12,53 +10,10 @@ const WINDOWS: Record<WindowType, { title: string; icon: string; initial: { x: n
   portfolio: { title: "Portfolio", icon: "https://win98icons.alexmeub.com/icons/png/computer_explorer-5.png", initial: { x: 200, y: 90, w: 480, h: 360 } },
   projects: { title: "My Projects", icon: "https://win98icons.alexmeub.com/icons/png/directory_open_file_mydocs-4.png", initial: { x: 240, y: 110, w: 580, h: 420 } },
   about: { title: "About Me", icon: "https://win98icons.alexmeub.com/icons/png/notepad-3.png", initial: { x: 220, y: 80, w: 560, h: 470 } },
-  documents: { title: "Contact", icon: "https://win98icons.alexmeub.com/icons/png/html-0.png", initial: { x: 260, y: 120, w: 420, h: 340 } },
+  documents: { title: "Links", icon: "https://win98icons.alexmeub.com/icons/png/html-0.png", initial: { x: 260, y: 120, w: 420, h: 320 } },
   computer: { title: "My Computer", icon: "https://win98icons.alexmeub.com/icons/png/cd_drive-4.png", initial: { x: 280, y: 100, w: 460, h: 360 } },
   recycle: { title: "Recycle Bin", icon: "https://win98icons.alexmeub.com/icons/png/recycle_bin_full-4.png", initial: { x: 300, y: 140, w: 420, h: 300 } },
 }
-
-// ─── CONTENT — fill in the [TODO] fields with your real details ───────────────
-type Project = {
-  title: string
-  url: string
-  image: string
-  tags: string[]
-  blurb: string
-  role: string
-  result: string
-}
-
-const PROJECTS: Project[] = [
-  {
-    title: "1UI.dev",
-    url: "https://1ui.dev",
-    image: "/modern-ui-component-library-design-system.jpg",
-    tags: ["React", "UI Library"],
-    blurb: "[TODO: one sentence — what 1UI.dev is and who it's for]",
-    role: "[TODO: your role, e.g. Solo builder / Lead frontend]",
-    result: "[TODO: a concrete outcome — users, stars, launch, revenue]",
-  },
-  {
-    title: "Apichecker.io",
-    url: "https://apichecker.io",
-    image: "/api-testing-monitoring-dashboard-interface.jpg",
-    tags: ["API", "Testing"],
-    blurb: "[TODO: one sentence — what Apichecker.io does]",
-    role: "[TODO: your role]",
-    result: "[TODO: a concrete outcome / traction]",
-  },
-  // [TODO: add more projects by copying the shape above]
-]
-
-type ContactLink = { label: string; href: string; icon: string }
-
-const CONTACTS: ContactLink[] = [
-  { label: "[TODO] you@email.com", href: "mailto:TODO@example.com", icon: "https://win98icons.alexmeub.com/icons/png/outlook_express-4.png" },
-  { label: "[TODO] GitHub", href: "https://github.com/TODO", icon: "https://win98icons.alexmeub.com/icons/png/html-0.png" },
-  { label: "[TODO] LinkedIn", href: "https://linkedin.com/in/TODO", icon: "https://win98icons.alexmeub.com/icons/png/html-0.png" },
-  { label: "[TODO] X / Twitter", href: "https://x.com/TODO", icon: "https://win98icons.alexmeub.com/icons/png/html-0.png" },
-  { label: "jess.vc", href: "https://jess.vc", icon: "https://win98icons.alexmeub.com/icons/png/html-0.png" },
-]
 
 const MENU_BAR = (
   <div className="menu-bar">
@@ -81,6 +36,13 @@ export default function Home() {
   const [isStartMenuOpen, setIsStartMenuOpen] = useState(false)
   const [stack, setStack] = useState<WindowType[]>(["hero"])
   const [minimized, setMinimized] = useState<Partial<Record<WindowType, boolean>>>({})
+  const [time, setTime] = useState<Date | null>(null)
+
+  useEffect(() => {
+    setTime(new Date())
+    const id = setInterval(() => setTime(new Date()), 1000)
+    return () => clearInterval(id)
+  }, [])
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -127,7 +89,7 @@ export default function Home() {
               <img
                 src="https://win98icons.alexmeub.com/icons/png/windows-0.png"
                 alt=""
-                className="welcome-flag" onError={onImgError}
+                className="welcome-flag" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }}
               />
               <div className="welcome-banner-text">
                 <span className="welcome-ms">Microsoft</span>
@@ -180,32 +142,42 @@ export default function Home() {
           <>
             {MENU_BAR}
             <div className="window-content">
-              <p style={{ marginBottom: 12 }}>
-                My full, up-to-date portfolio lives at{" "}
+              <p style={{ marginBottom: 16 }}>
+                Full portfolio available at{" "}
                 <a
                   href="https://jess.vc"
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: "var(--accent-red)", fontWeight: "bold" }}
+                  style={{ color: "var(--xmas-red)", fontWeight: "bold" }}
                 >
                   jess.vc
                 </a>
-                .
               </p>
-              <p style={{ marginBottom: 16 }}>[TODO: a line or two on what visitors will find there.]</p>
-              {/* [TODO: drop your CV at public/resume.pdf, or point href to an external link] */}
-              <a
-                href={asset("/resume.pdf")}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="button-retro"
-                style={{ textDecoration: "none", display: "inline-block", color: "inherit" }}
-              >
-                Download résumé (CV)
-              </a>
+              <div className="folder-list">
+                <a
+                  href="https://1ui.dev"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="folder-item"
+                  style={{ textDecoration: "none", color: "inherit" }}
+                >
+                  <img src="https://win98icons.alexmeub.com/icons/png/html-0.png" alt="1UI.dev" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+                  <span>1UI.dev</span>
+                </a>
+                <a
+                  href="https://apichecker.io"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="folder-item"
+                  style={{ textDecoration: "none", color: "inherit" }}
+                >
+                  <img src="https://win98icons.alexmeub.com/icons/png/html-0.png" alt="Apichecker.io" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+                  <span>Apichecker.io</span>
+                </a>
+              </div>
             </div>
             <div className="status-bar">
-              <span>jess.vc</span>
+              <span>2 object(s)</span>
               <span>Portfolio</span>
             </div>
           </>
@@ -216,39 +188,42 @@ export default function Home() {
             {MENU_BAR}
             <div className="window-content">
               <div className="project-grid-modal">
-                {PROJECTS.map((p) => (
-                  <a
-                    key={p.title}
-                    href={p.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="project-card"
-                    style={{ textDecoration: "none", color: "inherit" }}
-                  >
-                    <img src={asset(p.image)} alt={p.title} className="project-img" onError={onImgError} />
-                    <div className="project-info">
-                      <h3 className="project-title">{p.title}</h3>
-                      <p className="project-blurb">{p.blurb}</p>
-                      <p className="project-meta">
-                        <strong>Role:</strong> {p.role}
-                      </p>
-                      <p className="project-meta">
-                        <strong>Result:</strong> {p.result}
-                      </p>
-                      <div className="project-tags">
-                        {p.tags.map((t) => (
-                          <span key={t} className="tag">
-                            {t}
-                          </span>
-                        ))}
-                      </div>
+                <a
+                  href="https://1ui.dev"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="project-card"
+                  style={{ textDecoration: "none", color: "inherit" }}
+                >
+                  <img src="/modern-ui-component-library-design-system.jpg" alt="1UI.dev" className="project-img" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+                  <div className="project-info">
+                    <h3 className="project-title">1UI.dev</h3>
+                    <div>
+                      <span className="tag">React</span>
+                      <span className="tag">UI Library</span>
                     </div>
-                  </a>
-                ))}
+                  </div>
+                </a>
+                <a
+                  href="https://apichecker.io"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="project-card"
+                  style={{ textDecoration: "none", color: "inherit" }}
+                >
+                  <img src="/api-testing-monitoring-dashboard-interface.jpg" alt="Apichecker.io" className="project-img" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+                  <div className="project-info">
+                    <h3 className="project-title">Apichecker.io</h3>
+                    <div>
+                      <span className="tag">API</span>
+                      <span className="tag">Testing</span>
+                    </div>
+                  </div>
+                </a>
               </div>
             </div>
             <div className="status-bar">
-              <span>{PROJECTS.length} items</span>
+              <span>2 items</span>
               <span>Ready</span>
             </div>
           </>
@@ -259,30 +234,30 @@ export default function Home() {
             {MENU_BAR}
             <div className="window-content">
               <div className="about-content-modal">
-                <h2 className="about-title">[TODO: Your name and a real one-line title]</h2>
+                <h2 className="about-title">Creative Professional</h2>
                 <p className="about-description">
-                  [TODO: 2 to 3 sentences, first person. Who you are, what you actually build, the stack you
-                  reach for, where you&apos;re based, and the kind of work you want. Name real tools and years;
-                  skip adjectives like &quot;passionate&quot; and &quot;creative&quot;.]
+                  I&apos;m passionate about creating meaningful digital experiences that blend aesthetics with
+                  functionality. With expertise in design and development, I bring ideas to life through clean code and
+                  thoughtful interfaces.
                 </p>
                 <div className="skills-grid">
                   <div className="skill-card">
-                    <h3 className="skill-title">[TODO: Skill area 1]</h3>
-                    <p className="skill-description">[TODO: concrete tools and frameworks, not adjectives.]</p>
+                    <h3 className="skill-title">Design</h3>
+                    <p className="skill-description">Crafting beautiful, user-centered interfaces with attention to detail.</p>
                   </div>
                   <div className="skill-card">
-                    <h3 className="skill-title">[TODO: Skill area 2]</h3>
-                    <p className="skill-description">[TODO: concrete tools and frameworks.]</p>
+                    <h3 className="skill-title">Development</h3>
+                    <p className="skill-description">Building responsive, performant web applications with modern technologies.</p>
                   </div>
                   <div className="skill-card">
-                    <h3 className="skill-title">[TODO: Skill area 3]</h3>
-                    <p className="skill-description">[TODO: concrete tools and frameworks.]</p>
+                    <h3 className="skill-title">Creativity</h3>
+                    <p className="skill-description">Bringing fresh ideas and innovative solutions to every project.</p>
                   </div>
                 </div>
               </div>
             </div>
             <div className="status-bar">
-              <span>Readme.txt</span>
+              <span>Page 1 of 1</span>
               <span>100%</span>
             </div>
           </>
@@ -293,24 +268,31 @@ export default function Home() {
             {MENU_BAR}
             <div className="window-content">
               <div className="folder-list">
-                {CONTACTS.map((c) => (
-                  <a
-                    key={c.label}
-                    href={c.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="folder-item"
-                    style={{ textDecoration: "none", color: "inherit", padding: "4px 8px" }}
-                  >
-                    <img src={c.icon} alt="" onError={onImgError} />
-                    <span>{c.label}</span>
-                  </a>
-                ))}
+                <a
+                  href="https://1ui.dev"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="folder-item"
+                  style={{ textDecoration: "none", color: "inherit", padding: "4px 8px" }}
+                >
+                  <img src="https://win98icons.alexmeub.com/icons/png/html-0.png" alt="Project" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+                  <span>1UI.dev</span>
+                </a>
+                <a
+                  href="https://apichecker.io"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="folder-item"
+                  style={{ textDecoration: "none", color: "inherit", padding: "4px 8px" }}
+                >
+                  <img src="https://win98icons.alexmeub.com/icons/png/html-0.png" alt="Project" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+                  <span>Apichecker.io</span>
+                </a>
               </div>
             </div>
             <div className="status-bar">
-              <span>{CONTACTS.length} object(s)</span>
-              <span>Contact</span>
+              <span>2 object(s)</span>
+              <span>Links</span>
             </div>
           </>
         )
@@ -321,21 +303,21 @@ export default function Home() {
             <div className="window-content">
               <div className="computer-drives">
                 <div className="drive-item">
-                  <img src="https://win98icons.alexmeub.com/icons/png/cd_drive-4.png" alt="C Drive" onError={onImgError} />
+                  <img src="https://win98icons.alexmeub.com/icons/png/cd_drive-4.png" alt="C Drive" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
                   <div>
                     <div className="drive-label">(C:)</div>
                     <div className="drive-name">Local Disk</div>
                   </div>
                 </div>
                 <div className="drive-item">
-                  <img src="https://win98icons.alexmeub.com/icons/png/cd_drive-4.png" alt="D Drive" onError={onImgError} />
+                  <img src="https://win98icons.alexmeub.com/icons/png/cd_drive-4.png" alt="D Drive" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
                   <div>
                     <div className="drive-label">(D:)</div>
                     <div className="drive-name">CD-ROM</div>
                   </div>
                 </div>
                 <div className="drive-item">
-                  <img src="https://win98icons.alexmeub.com/icons/png/cd_drive-4.png" alt="A Drive" onError={onImgError} />
+                  <img src="https://win98icons.alexmeub.com/icons/png/cd_drive-4.png" alt="A Drive" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
                   <div>
                     <div className="drive-label">(A:)</div>
                     <div className="drive-name">3½ Floppy</div>
@@ -358,7 +340,7 @@ export default function Home() {
                 <img
                   src="https://win98icons.alexmeub.com/icons/png/recycle_bin_empty-4.png"
                   alt="Empty"
-                  style={{ width: "64px", height: "64px", imageRendering: "pixelated" }} onError={onImgError}
+                  style={{ width: "64px", height: "64px", imageRendering: "pixelated" }} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }}
                 />
                 <p>The Recycle Bin is empty.</p>
               </div>
@@ -375,13 +357,12 @@ export default function Home() {
   const desktopIcons: WindowType[] = ["portfolio", "projects", "about", "documents", "computer", "recycle"]
 
   return (
-    <main className="desktop">
-      <h1 className="sr-only">Portfolio of Jessin Sam S</h1>
+    <div className="desktop">
       {/* Desktop icons column */}
       <div className="desktop-icons">
         {desktopIcons.map((type) => (
-          <button key={type} onClick={() => open(type)} className="icon-item">
-            <img src={WINDOWS[type].icon || asset("/placeholder.svg")} alt={WINDOWS[type].title} onError={onImgError} />
+          <button key={type} onDoubleClick={() => open(type)} onClick={() => open(type)} className="icon-item">
+            <img src={WINDOWS[type].icon || "/placeholder.svg"} alt={WINDOWS[type].title} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
             <span>{WINDOWS[type].title}</span>
           </button>
         ))}
@@ -409,7 +390,7 @@ export default function Home() {
       {/* Taskbar */}
       <div className="taskbar">
         <button className="start-btn" onClick={() => setIsStartMenuOpen(!isStartMenuOpen)}>
-          <img src="https://win98icons.alexmeub.com/icons/png/windows-0.png" alt="Start" onError={onImgError} />
+          <img src="https://win98icons.alexmeub.com/icons/png/windows-0.png" alt="Start" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
           <span className="start-text">Start</span>
         </button>
 
@@ -422,29 +403,29 @@ export default function Home() {
             <div className="start-menu-items">
               {(["portfolio", "projects", "about", "documents", "computer"] as WindowType[]).map((type) => (
                 <button key={type} onClick={() => open(type)} className="start-menu-item">
-                  <img src={WINDOWS[type].icon || asset("/placeholder.svg")} alt={WINDOWS[type].title} onError={onImgError} />
+                  <img src={WINDOWS[type].icon || "/placeholder.svg"} alt={WINDOWS[type].title} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
                   <span>{WINDOWS[type].title}</span>
                 </button>
               ))}
               <div className="start-menu-separator"></div>
-              <button type="button" className="start-menu-item">
-                <img src="https://win98icons.alexmeub.com/icons/png/settings_gear-0.png" alt="Settings" onError={onImgError} />
+              <a href="#" className="start-menu-item">
+                <img src="https://win98icons.alexmeub.com/icons/png/settings_gear-0.png" alt="Settings" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
                 <span>Settings</span>
-              </button>
+              </a>
               <div className="start-menu-separator"></div>
-              <button type="button" className="start-menu-item">
-                <img src="https://win98icons.alexmeub.com/icons/png/shut_down_with_computer-0.png" alt="Shut Down" onError={onImgError} />
+              <a href="#" className="start-menu-item">
+                <img src="https://win98icons.alexmeub.com/icons/png/shut_down_with_computer-0.png" alt="Shut Down" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
                 <span>Shut Down...</span>
-              </button>
+              </a>
             </div>
           </div>
         )}
 
         {/* Quick launch */}
         <div className="quick-launch">
-          <img src="https://win98icons.alexmeub.com/icons/png/msie1-2.png" alt="Internet Explorer" onError={onImgError} />
-          <img src="https://win98icons.alexmeub.com/icons/png/channels-3.png" alt="Channels" onError={onImgError} />
-          <img src="https://win98icons.alexmeub.com/icons/png/desktop-0.png" alt="Show Desktop" onError={onImgError} />
+          <img src="https://win98icons.alexmeub.com/icons/png/msie1-2.png" alt="Internet Explorer" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+          <img src="https://win98icons.alexmeub.com/icons/png/channels-3.png" alt="Channels" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
+          <img src="https://win98icons.alexmeub.com/icons/png/desktop-0.png" alt="Show Desktop" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
         </div>
 
         {/* Open window buttons */}
@@ -455,14 +436,18 @@ export default function Home() {
               className={`taskbar-window-btn${!minimized[type] && stack[stack.length - 1] === type ? " active" : ""}`}
               onClick={() => taskbarClick(type)}
             >
-              <img src={WINDOWS[type].icon || asset("/placeholder.svg")} alt="" className="taskbar-icon" onError={onImgError} />
+              <img src={WINDOWS[type].icon || "/placeholder.svg"} alt="" className="taskbar-icon" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/placeholder.svg" }} />
               <span>{WINDOWS[type].title}</span>
             </button>
           ))}
         </div>
 
-        <TaskbarClock />
+        <div className="taskbar-time">
+          <span className="time-text">
+            {time ? time.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }) : ""}
+          </span>
+        </div>
       </div>
-    </main>
+    </div>
   )
 }
