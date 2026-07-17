@@ -596,7 +596,9 @@ h1 {
   display: flex;
   align-items: center;
   gap: 4px;
-  max-width: 150px;
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 160px;
   height: 22px;
   padding: 0 6px;
   background: var(--win-btn-face);
@@ -691,6 +693,7 @@ h1 {
 .start-menu-items {
   flex: 1;
   padding: 4px 0;
+  margin-left: 24px; /* clear the absolutely-positioned vertical header bar */
   overflow: hidden;
 }
 

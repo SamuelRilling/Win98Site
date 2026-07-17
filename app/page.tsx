@@ -14,6 +14,8 @@ const ICON = "https://win98icons.alexmeub.com/icons/png"
 export default function Home() {
   const [isStartMenuOpen, setIsStartMenuOpen] = useState(false)
   const [stack, setStack] = useState<WindowKey[]>([sections.initial])
+  // Taskbar order is stable in open order; stack only drives z-index/focus.
+  const [openOrder, setOpenOrder] = useState<WindowKey[]>([sections.initial])
   const [minimized, setMinimized] = useState<Partial<Record<WindowKey, boolean>>>({})
   const [isShutdown, setIsShutdown] = useState(false)
 
@@ -33,11 +35,13 @@ export default function Home() {
   const open = (type: WindowKey) => {
     setMinimized((m) => ({ ...m, [type]: false }))
     setStack((s) => [...s.filter((w) => w !== type), type])
+    setOpenOrder((o) => (o.includes(type) ? o : [...o, type]))
     setIsStartMenuOpen(false)
   }
 
   const close = (type: WindowKey) => {
     setStack((s) => s.filter((w) => w !== type))
+    setOpenOrder((o) => o.filter((w) => w !== type))
     setMinimized((m) => ({ ...m, [type]: false }))
   }
 
@@ -432,7 +436,7 @@ export default function Home() {
 
         {/* Open window buttons */}
         <div className="taskbar-windows">
-          {stack.map((type) => (
+          {openOrder.map((type) => (
             <button
               key={type}
               className={`taskbar-window-btn${!minimized[type] && stack[stack.length - 1] === type ? " active" : ""}`}
