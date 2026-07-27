@@ -1,87 +1,115 @@
 # Windows 98 Portfolio Template
 
-A personal portfolio that boots as a nostalgic Windows 98 desktop: draggable, resizable windows, a Start menu, a taskbar with a live clock, and a "Welcome" dialog. Built with Next.js (static export) and deployed free on GitHub Pages.
+A nostalgic Windows 98 desktop portfolio you can edit **entirely in the browser** with GitHub Codespaces and deploy automatically to GitHub Pages. No local Node.js, npm, or editor installation is required for the main workflow.
 
-You fill in **one file** (`site.config.ts`) and push. No build config to touch, no framework knowledge required.
+You fill in **one file** — `site.config.ts` — and push. The site handles the retro desktop UI, windows, taskbar, Start menu, and static export for you.
 
-![The desktop with the Welcome dialog, desktop icons, and taskbar](docs/screenshot.png)
+> Live demo: `https://<your-username>.github.io/<your-repo>`
 
-> Live demo: `https://<your-username>.github.io/<your-repo>` (replace with your own once deployed).
+## Why this template
 
-## Features
+- **Browser-first workflow:** edit in Codespaces, preview in the browser, commit from GitHub.
+- **No local software needed:** the repo is ready to work with from a browser-only machine.
+- **Automatic deployment:** every push to `main` builds and deploys through GitHub Actions.
+- **One-file content editing:** most of the site lives in `site.config.ts`.
+- **Static hosting:** no server, no database, no extra infrastructure.
+- **Still supports local development:** if you prefer a local workflow, `npm install` and `npm run dev` still work.
 
-- One-file content: name, bio, projects, contact links, and section order all live in `site.config.ts`
-- Real draggable / resizable / minimizable / maximizable windows, Start menu, taskbar, and system clock
-- A Welcome dialog, an in-app Help window, and a classic "Shut Down" screen
-- Static export, zero server, free hosting on GitHub Pages
-- `basePath` is derived from your repo name automatically by the deploy workflow, so images never 404
-- Accessible: keyboard focus rings, reduced-motion support, larger touch targets on phones
-- Graceful image fallbacks, no runtime dependencies beyond React and Next
+## Fastest way to use it
 
-## Quickstart
+### Option A: browser-only workflow
 
-1. Click **Use this template → Create a new repository** (or clone this repo).
-2. Install and run locally:
+1. Open the repository in GitHub.
+2. Click **Code → Codespaces → Create codespace on main**.
+3. Wait for dependencies to install automatically.
+4. Run:
    ```bash
-   npm install
    npm run dev
    ```
-   Open http://localhost:3000.
-3. Open **`site.config.ts`** and replace the demo content (see below).
-4. Commit and push to `main`. Enable Pages once (next section). Done.
+5. Open the forwarded port in your browser.
+6. Edit `site.config.ts`, save, preview, commit, and push.
 
-## Make it yours (`site.config.ts`)
+### Option B: local workflow
 
-Everything a visitor sees comes from `site.config.ts`. The demo data belongs to a fictional "Riley Quinn" — replace it.
-
-| What | Where in the config |
-|---|---|
-| Your name, role, browser tab title, meta description | `identity` |
-| The "Welcome" dialog heading, paragraphs, and its shortcut buttons | `welcome` |
-| Your bio and skill cards | `about` |
-| Your projects (image, blurb, role, result, tags, link) | `projects` |
-| Your contact links (email, GitHub, LinkedIn, site) | `contacts` |
-| The external-portfolio pointer and résumé link | `portfolio` |
-| The in-app Help window (customization guide by default) | `help` |
-| The "Shut Down" screen message and sign-off | `shutdown` |
-| Desktop wallpaper (image path or CSS value; empty = flat teal) | `theme.wallpaper` |
-| Which windows appear and in what order | `sections` |
-| Window titles, icons, and opening size/position | `windows` |
-
-Common edits:
-
-- **Add a project:** copy one object in the `projects` array and edit it. Drop its image in `public/` and point `image` at `"/your-file.png"`.
-- **Add your résumé:** put a PDF at `public/resume.pdf` (or set `portfolio.resumePath` to an external URL).
-- **Hide a window** (e.g. Recycle Bin): remove its key from `sections.desktopIcons` and `sections.startMenu`.
-- **Reorder** desktop icons or Start menu: reorder the keys in `sections`.
-- **Rename a window:** change its `title` in `windows`.
-- **Change an icon:** icons come from [win98icons.alexmeub.com](https://win98icons.alexmeub.com); set any image URL.
-
-Images referenced from config must live in `public/` and be written as root paths (`/foo.png`); they are prefixed with the deploy base path automatically.
-
-## Deploy to GitHub Pages
-
-1. Push your repo to GitHub.
-2. **Settings → Pages → Build and deployment → Source: GitHub Actions.**
-3. Every push to `main` builds and deploys via `.github/workflows/nextjs.yml`.
-
-The workflow reads your repository name and sets the site's base path for you, so a repo named `my-portfolio` is served correctly at `https://<you>.github.io/my-portfolio/`.
-
-> Deploying to a root `<username>.github.io` repository instead? Set the workflow's base-path step `value` to an empty string.
-
-## Local production build
+If you prefer working on your own machine:
 
 ```bash
-npm run build      # outputs a static site to ./out
+npm install
+npm run dev
 ```
 
-Local builds have no base path (they run at `/`), which is correct for local preview. The base path is only applied in the GitHub Actions deploy.
+Open http://localhost:3000.
 
-## Tech stack
+## What to edit first
 
-Next.js 16 (App Router, static export) · React 19 · TypeScript · Tailwind CSS v4. No UI framework, no database.
+Almost all content is driven by `site.config.ts`.
+
+| What you want to change | Where to edit |
+|---|---|
+| Your name, role, tab title, meta description | `identity` |
+| Welcome dialog copy and shortcuts | `welcome` |
+| Bio and skill cards | `about` |
+| Projects | `projects` |
+| Contact links | `contacts` |
+| External portfolio and résumé link | `portfolio` |
+| Help window text | `help` |
+| Shut Down screen message | `shutdown` |
+| Wallpaper | `theme.wallpaper` |
+| Which windows appear | `sections` |
+| Window titles, icons, and size/position | `windows` |
+
+## Adding your own content
+
+### Projects
+
+Copy one object in `projects`, update the text, and replace the image file in `public/`.
+
+Example:
+
+```ts
+{
+  title: "My Project",
+  url: "https://example.com",
+  image: "/my-project.png",
+  tags: ["React", "TypeScript"],
+  blurb: "Short summary of what it does.",
+  role: "Solo builder",
+  result: "Outcome or proof point.",
+}
+```
+
+### Résumé
+
+Place a PDF at `public/resume.pdf` or point `portfolio.resumePath` to another URL.
+
+### Images
+
+Any image used by the config should live in `public/` and be referenced with a root path like:
+
+```ts
+"/my-image.png"
+```
+
+## Deployment
+
+This repo is set up for GitHub Pages already.
+
+1. Push to GitHub.
+2. Go to **Settings → Pages**.
+3. Set **Build and deployment → Source** to **GitHub Actions**.
+4. Push to `main` again and the workflow will publish the site automatically.
+
+The workflow derives the GitHub Pages base path from the repository name, so project sites work correctly without extra setup.
+
+## Technical notes
+
+- Next.js 16 with static export
+- React 19
+- TypeScript
+- Tailwind CSS v4
+- No backend
 
 ## Credits and license
 
 - Icons by [win98icons.alexmeub.com](https://win98icons.alexmeub.com).
-- Released under the [MIT License](LICENSE). Update the copyright holder in `LICENSE` to your name.
+- Released under the MIT License. Update the copyright holder in `LICENSE` to your name.
