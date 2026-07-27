@@ -2,6 +2,9 @@
   "name": "win98-portfolio-template",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20 <21"
+  },
   "scripts": {
     "build": "next build",
     "dev": "next dev",
