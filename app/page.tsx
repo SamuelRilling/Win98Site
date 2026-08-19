@@ -3,6 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react"
 import { WinWindow } from "@/components/win-window"
 import { TaskbarClock } from "@/components/taskbar-clock"
+import { WinContextMenu } from "@/components/win-context-menu"
 import { asset, onImgError } from "@/lib/utils"
 import { site, type WindowKey } from "@/site.config"
 
@@ -11,6 +12,12 @@ const { windows: WINDOWS, sections } = site
 /** Base URL for the third-party Win98 icon set used by the desktop chrome. */
 const ICON = "https://win98icons.alexmeub.com/icons/png"
 
+interface ContextMenuState {
+  x: number
+  y: number
+  target: "recycle" | "desktop"
+}
+
 export default function Home() {
   const [isStartMenuOpen, setIsStartMenuOpen] = useState(false)
   const [stack, setStack] = useState<WindowKey[]>([sections.initial])
@@ -18,6 +25,11 @@ export default function Home() {
   const [openOrder, setOpenOrder] = useState<WindowKey[]>([sections.initial])
   const [minimized, setMinimized] = useState<Partial<Record<WindowKey, boolean>>>({})
   const [isShutdown, setIsShutdown] = useState(false)
+
+  // Virus.exe state
+  const [virusInRecycleBin, setVirusInRecycleBin] = useState(true)
+  const [virusOnDesktop, setVirusOnDesktop] = useState(false)
+  const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -61,6 +73,62 @@ export default function Home() {
     setIsStartMenuOpen(false)
     setIsShutdown(true)
   }
+
+  // Virus.exe context menu handlers
+  const handleRecycleBinContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    if (!virusInRecycleBin) return
+    setContextMenu({ x: e.clientX, y: e.clientY, target: "recycle" })
+  }
+
+  const handleDesktopIconContextMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+    if (!virusOnDesktop) return
+    setContextMenu({ x: e.clientX, y: e.clientY, target: "desktop" })
+  }
+
+  const closeContextMenu = () => {
+    setContextMenu(null)
+  }
+
+  const handleContextMenuAction = (action: string) => {
+    switch (action) {
+      case "restore":
+        if (virusInRecycleBin) {
+          setVirusInRecycleBin(false)
+          setVirusOnDesktop(true)
+        }
+        break
+      case "delete":
+        // Permanently delete - remove from recycle bin
+        if (virusInRecycleBin) {
+          setVirusInRecycleBin(false)
+        }
+        break
+      case "run":
+        // Run the virus - placeholder for future visual effects
+        alert("virus.exe has been executed! System corruption initiating... (placeholder)")
+        break
+      default:
+        // Open, Cut, Copy, Rename, Properties - no-op for now
+        break
+    }
+    closeContextMenu()
+  }
+
+  // Click outside to close context menu
+  useEffect(() => {
+    const handleClickOutside = () => {
+      closeContextMenu()
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
+  // Dynamic desktop icons based on virus state
+  const desktopIcons = virusOnDesktop
+    ? [...sections.desktopIcons, "virus" as WindowKey]
+    : sections.desktopIcons
 
   // File/Edit/View are period chrome; Help is wired to open the Help window.
   const menuBar = (
@@ -320,18 +388,34 @@ export default function Home() {
           <>
             {menuBar}
             <div className="window-content">
-              <div className="recycle-empty">
-                <img
-                  src={`${ICON}/recycle_bin_empty-4.png`}
-                  alt="Empty"
-                  style={{ width: "64px", height: "64px", imageRendering: "pixelated" }}
-                  onError={onImgError}
-                />
-                <p>The Recycle Bin is empty.</p>
-              </div>
+              {virusInRecycleBin ? (
+                <div
+                  className="recycle-item"
+                  onContextMenu={handleRecycleBinContextMenu}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <img
+                    src={`${ICON}/application-0.png`}
+                    alt="virus.exe"
+                    style={{ width: "32px", height: "32px", imageRendering: "pixelated" }}
+                    onError={onImgError}
+                  />
+                  <span>virus.exe</span>
+                </div>
+              ) : (
+                <div className="recycle-empty">
+                  <img
+                    src={`${ICON}/recycle_bin_empty-4.png`}
+                    alt="Empty"
+                    style={{ width: "64px", height: "64px", imageRendering: "pixelated" }}
+                    onError={onImgError}
+                  />
+                  <p>The Recycle Bin is empty.</p>
+                </div>
+              )}
             </div>
             <div className="status-bar">
-              <span>0 object(s)</span>
+              <span>{virusInRecycleBin ? "1 object(s)" : "0 object(s)"}</span>
               <span>Recycle Bin</span>
             </div>
           </>
@@ -371,8 +455,19 @@ export default function Home() {
 
       {/* Desktop icons column */}
       <div className="desktop-icons">
-        {sections.desktopIcons.map((type) => (
-          <button key={type} onClick={() => open(type)} className="icon-item">
+        {desktopIcons.map((type) => (
+          <button
+            key={type}
+            onClick={() => {
+              if (type === "virus" && virusOnDesktop) {
+                handleContextMenuAction("run")
+              } else {
+                open(type)
+              }
+            }}
+            onContextMenu={type === "virus" && virusOnDesktop ? handleDesktopIconContextMenu : undefined}
+            className="icon-item"
+          >
             <img src={WINDOWS[type].icon || asset("/placeholder.svg")} alt={WINDOWS[type].title} onError={onImgError} />
             <span>{WINDOWS[type].title}</span>
           </button>
@@ -397,6 +492,36 @@ export default function Home() {
           {renderBody(type)}
         </WinWindow>
       ))}
+
+      {/* Context Menu */}
+      {contextMenu && (
+        <WinContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          items={
+            contextMenu.target === "recycle"
+              ? [
+                  { label: "Open", action: "open", icon: `${ICON}/folder_open-3.png` },
+                  { label: "Cut", action: "cut", icon: `${ICON}/cut-0.png`, separatorAfter: true },
+                  { label: "Copy", action: "copy", icon: `${ICON}/copy-0.png` },
+                  { label: "Delete", action: "delete", icon: `${ICON}/delete-0.png`, separatorAfter: true },
+                  { label: "Rename", action: "rename", icon: `${ICON}/rename-0.png` },
+                  { label: "Properties", action: "properties", icon: `${ICON}/property_sheet-4.png`, separatorAfter: true },
+                  { label: "Restore", action: "restore", icon: `${ICON}/restore-0.png` },
+                ]
+              : [
+                  { label: "Open", action: "run", icon: `${ICON}/folder_open-3.png` },
+                  { label: "Cut", action: "cut", icon: `${ICON}/cut-0.png`, separatorAfter: true },
+                  { label: "Copy", action: "copy", icon: `${ICON}/copy-0.png` },
+                  { label: "Delete", action: "delete", icon: `${ICON}/delete-0.png`, separatorAfter: true },
+                  { label: "Rename", action: "rename", icon: `${ICON}/rename-0.png` },
+                  { label: "Properties", action: "properties", icon: `${ICON}/property_sheet-4.png` },
+                ]
+          }
+          onAction={handleContextMenuAction}
+          onClose={closeContextMenu}
+        />
+      )}
 
       {/* Taskbar */}
       <div className="taskbar">

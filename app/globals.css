@@ -766,6 +766,57 @@ h1 {
   border-bottom: 1px solid var(--win-white);
 }
 
+/* Context Menu (Win98 style) */
+.context-menu {
+  position: fixed;
+  background: var(--win-gray);
+  border: 2px outset var(--win-white);
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+  min-width: 160px;
+  max-width: 280px;
+  z-index: 1000;
+  padding: 2px 0;
+  font-family: "MS Sans Serif", "Microsoft Sans Serif", Arial, sans-serif;
+  font-size: 11px;
+  color: var(--text-dark);
+  user-select: none;
+}
+
+.context-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 20px 3px 8px;
+  cursor: default;
+  white-space: nowrap;
+  outline: none;
+}
+
+.context-menu-item:focus,
+.context-menu-item:hover:not(.disabled) {
+  background: var(--win-highlight);
+  color: var(--win-highlight-text);
+}
+
+.context-menu-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.context-menu-icon {
+  width: 16px;
+  height: 16px;
+  image-rendering: pixelated;
+  flex-shrink: 0;
+}
+
+.context-menu-separator {
+  height: 1px;
+  background: var(--win-shadow);
+  margin: 2px 4px;
+  border-bottom: 1px solid var(--win-white);
+}
+
 .menu-bar {
   display: flex;
   gap: 2px;
@@ -941,6 +992,37 @@ h1 {
   font-size: 14px;
   color: var(--text-dark);
   margin: 0;
+}
+
+/* Recycle bin item (virus.exe) */
+.recycle-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  margin: 8px;
+  cursor: default;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  background: transparent;
+  transition: background 0.1s, border-color 0.1s;
+}
+
+.recycle-item:hover,
+.recycle-item:focus {
+  background: var(--win-highlight);
+  color: var(--win-highlight-text);
+  border-color: var(--win-highlight-text);
+  outline: none;
+}
+
+.recycle-item img {
+  flex-shrink: 0;
+}
+
+.recycle-item span {
+  font-size: 13px;
+  white-space: nowrap;
 }
 
 .about-title {
