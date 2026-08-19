@@ -73,10 +73,10 @@ const ICON = "https://win98icons.alexmeub.com/icons/png"
 
 export const site: SiteConfig = {
   identity: {
-    name: "Riley Quinn",
-    role: "Frontend Developer",
-    metaTitle: "Riley Quinn Portfolio",
-    metaDescription: "A developer portfolio built as a nostalgic Windows 98 desktop.",
+    name: "Samuel Rilling",
+    role: "Mechanical Engineer",
+    metaTitle: "Sam's Windows 98 Themed Portfolio",
+    metaDescription: "A developer portfolio built Windows 98 desktop. Github template at https://github.com/SamuelRilling/Win98Site",
   },
 
   theme: {
@@ -103,7 +103,7 @@ export const site: SiteConfig = {
   welcome: {
     heading: "Welcome",
     paragraphs: [
-      "Welcome to my corner of the web, rebuilt as the desktop you grew up with.",
+      "Welcome to my corner of the web i rebuilt as my first computer experience.",
       "Take a moment to click around: every icon opens a window with something to explore.",
       "To open something, just click it.",
     ],
@@ -117,7 +117,7 @@ export const site: SiteConfig = {
   },
 
   about: {
-    title: "Riley Quinn, Frontend Developer",
+    title: "Samuel Rilling. Mechanical Engineer, Full Stack Developer",
     bio: [
       "I build fast, accessible web interfaces with React, TypeScript, and a soft spot for retro UI.",
       "Lately I have been working on developer tools and design systems. I care about the details: focus states, motion, and copy that respects the reader.",
@@ -132,8 +132,8 @@ export const site: SiteConfig = {
 
   projects: [
     {
-      title: "PixelPad",
-      url: "https://example.com",
+      title: "Customizable Template for this Website",
+      url: "https://github.com/SamuelRilling/Win98Sitem",
       image: "/demo-project-1.svg",
       tags: ["React", "Local-first"],
       blurb: "A tiny notes app with a Windows 98 skin and Markdown export.",
@@ -161,11 +161,10 @@ export const site: SiteConfig = {
   ],
 
   contacts: [
-    { label: "hello@yoursite.example", href: "mailto:hello@yoursite.example", icon: `${ICON}/outlook_express-4.png` },
-    { label: "GitHub", href: "https://github.com/yourusername", icon: `${ICON}/html-0.png` },
+    { label: "info@samuelrill.ing", href: "info@samuelrill.inge", icon: `${ICON}/outlook_express-4.png` },
+    { label: "GitHub", href: "https://github.com/SamuelRilling/", icon: `${ICON}/html-0.png` },
     { label: "LinkedIn", href: "https://linkedin.com/in/yourusername", icon: `${ICON}/html-0.png` },
-    { label: "X / Twitter", href: "https://x.com/yourusername", icon: `${ICON}/html-0.png` },
-    { label: "yoursite.example", href: "https://yoursite.example", icon: `${ICON}/html-0.png` },
+    { label: "samuelrill.ing", href: "https://samuelrill.ing", icon: `${ICON}/html-0.png` },
   ],
 
   portfolio: {
