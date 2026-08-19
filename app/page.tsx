@@ -12,6 +12,9 @@ const { windows: WINDOWS, sections } = site
 /** Base URL for the third-party Win98 icon set used by the desktop chrome. */
 const ICON = "https://win98icons.alexmeub.com/icons/png"
 
+// Build timestamp for deployment verification
+const BUILD_TIME = process.env.NEXT_PUBLIC_BUILD_TIME || "dev"
+
 interface ContextMenuState {
   x: number
   y: number
@@ -387,6 +390,9 @@ export default function Home() {
         return (
           <>
             {menuBar}
+            <div className="window-header" style={{ cursor: "default", padding: "2px 4px", fontSize: "11px", opacity: 0.7 }}>
+              Build: {BUILD_TIME}
+            </div>
             <div className="window-content">
               {virusInRecycleBin ? (
                 <div
