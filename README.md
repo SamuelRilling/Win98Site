@@ -113,3 +113,4 @@ The workflow derives the GitHub Pages base path from the repository name, so pro
 
 - Icons by [win98icons.alexmeub.com](https://win98icons.alexmeub.com).
 - Released under the MIT License. Update the copyright holder in `LICENSE` to your name.
+This branch (`Samuelrilling-cline`) is a copy of the `Samuel-Rilling` branch and serves as a test playground for Cline to edit the project via the Cline AI coding agent. Changes made here are experimental and intended for demonstrating AI-assisted development workflows.
