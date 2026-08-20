@@ -33,6 +33,7 @@ export default function Home() {
   const [virusInRecycleBin, setVirusInRecycleBin] = useState(true)
   const [virusOnDesktop, setVirusOnDesktop] = useState(false)
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
+  const [showVirusWarning, setShowVirusWarning] = useState(false)
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -78,16 +79,13 @@ export default function Home() {
   }
 
   // Virus.exe context menu handlers
-  const handleRecycleBinContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
-    e.preventDefault()
+  const handleRecycleBinContextMenu = (e?: React.MouseEvent<HTMLDivElement>) => {
     if (!virusInRecycleBin) return
-    setContextMenu({ x: e.clientX, y: e.clientY, target: "recycle" })
-  }
-
-  const handleDesktopIconContextMenu = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault()
-    if (!virusOnDesktop) return
-    setContextMenu({ x: e.clientX, y: e.clientY, target: "desktop" })
+    setContextMenu({
+      x: e?.clientX ?? 120,
+      y: e?.clientY ?? 200,
+      target: "recycle",
+    })
   }
 
   const closeContextMenu = () => {
@@ -102,31 +100,12 @@ export default function Home() {
           setVirusOnDesktop(true)
         }
         break
-      case "delete":
-        // Permanently delete - remove from recycle bin
-        if (virusInRecycleBin) {
-          setVirusInRecycleBin(false)
-        }
-        break
-      case "run":
-        // Run the virus - placeholder for future visual effects
-        alert("virus.exe has been executed! System corruption initiating... (placeholder)")
-        break
       default:
-        // Open, Cut, Copy, Rename, Properties - no-op for now
+        // Open, Cut, Copy, Delete, Rename, Properties - no-op for now
         break
     }
     closeContextMenu()
   }
-
-  // Click outside to close context menu
-  useEffect(() => {
-    const handleClickOutside = () => {
-      closeContextMenu()
-    }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
 
   // Dynamic desktop icons based on virus state
   const desktopIcons = virusOnDesktop
@@ -397,11 +376,20 @@ export default function Home() {
               {virusInRecycleBin ? (
                 <div
                   className="recycle-item"
-                  onContextMenu={handleRecycleBinContextMenu}
-                  onClick={(e) => e.stopPropagation()}
+                  role="button"
+                  tabIndex={0}
+                  aria-haspopup="menu"
+                  aria-label="virus.exe"
+                  onClick={handleRecycleBinContextMenu}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault()
+                      handleRecycleBinContextMenu()
+                    }
+                  }}
                 >
                   <img
-                    src={`${ICON}/application-0.png`}
+                    src={WINDOWS["virus"].icon || asset("/placeholder.svg")}
                     alt="virus.exe"
                     style={{ width: "32px", height: "32px", imageRendering: "pixelated" }}
                     onError={onImgError}
@@ -465,13 +453,13 @@ export default function Home() {
           <button
             key={type}
             onClick={() => {
-              if (type === "virus" && virusOnDesktop) {
-                handleContextMenuAction("run")
+              if (type === "virus") {
+                closeContextMenu()
+                if (virusOnDesktop) setShowVirusWarning(true)
               } else {
                 open(type)
               }
             }}
-            onContextMenu={type === "virus" && virusOnDesktop ? handleDesktopIconContextMenu : undefined}
             className="icon-item"
           >
             <img src={WINDOWS[type].icon || asset("/placeholder.svg")} alt={WINDOWS[type].title} onError={onImgError} />
@@ -504,29 +492,91 @@ export default function Home() {
         <WinContextMenu
           x={contextMenu.x}
           y={contextMenu.y}
-          items={
-            contextMenu.target === "recycle"
-              ? [
-                  { label: "Open", action: "open", icon: `${ICON}/folder_open-3.png` },
-                  { label: "Cut", action: "cut", icon: `${ICON}/cut-0.png`, separatorAfter: true },
-                  { label: "Copy", action: "copy", icon: `${ICON}/copy-0.png` },
-                  { label: "Delete", action: "delete", icon: `${ICON}/delete-0.png`, separatorAfter: true },
-                  { label: "Rename", action: "rename", icon: `${ICON}/rename-0.png` },
-                  { label: "Properties", action: "properties", icon: `${ICON}/property_sheet-4.png`, separatorAfter: true },
-                  { label: "Restore", action: "restore", icon: `${ICON}/restore-0.png` },
-                ]
-              : [
-                  { label: "Open", action: "run", icon: `${ICON}/folder_open-3.png` },
-                  { label: "Cut", action: "cut", icon: `${ICON}/cut-0.png`, separatorAfter: true },
-                  { label: "Copy", action: "copy", icon: `${ICON}/copy-0.png` },
-                  { label: "Delete", action: "delete", icon: `${ICON}/delete-0.png`, separatorAfter: true },
-                  { label: "Rename", action: "rename", icon: `${ICON}/rename-0.png` },
-                  { label: "Properties", action: "properties", icon: `${ICON}/property_sheet-4.png` },
-                ]
-          }
+          items={[
+            { label: "Open", action: "open", icon: `${ICON}/folder_open-3.png` },
+            { label: "Cut", action: "cut", icon: `${ICON}/cut-0.png`, separatorAfter: true },
+            { label: "Copy", action: "copy", icon: `${ICON}/copy-0.png` },
+            { label: "Delete", action: "delete", icon: `${ICON}/delete-0.png`, separatorAfter: true },
+            { label: "Rename", action: "rename", icon: `${ICON}/rename-0.png` },
+            { label: "Properties", action: "properties", icon: `${ICON}/property_sheet-4.png`, separatorAfter: true },
+            { label: "Restore", action: "restore", icon: `${ICON}/restore-0.png` },
+          ]}
           onAction={handleContextMenuAction}
           onClose={closeContextMenu}
         />
+      )}
+
+      {/* Virus warning dialog */}
+      {showVirusWarning && (
+        <div
+          className="virus-dialog-overlay"
+          onClick={() => setShowVirusWarning(false)}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") setShowVirusWarning(false)
+          }}
+        >
+          <div
+            className="win98-dialog"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="virusDialogTitle"
+          >
+            <div className="win98-dialog-titlebar">
+              <span className="win98-dialog-title-icon">
+                <img
+                  src={WINDOWS["virus"].icon || asset("/placeholder.svg")}
+                  alt=""
+                  width={14}
+                  height={14}
+                  onError={onImgError}
+                />
+              </span>
+              <span id="virusDialogTitle" className="win98-dialog-title-text">
+                virus.exe
+              </span>
+              <button
+                type="button"
+                className="win98-dialog-close"
+                aria-label="Close"
+                onClick={() => setShowVirusWarning(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="win98-dialog-body">
+              <img
+                src={WINDOWS["virus"].icon || asset("/placeholder.svg")}
+                alt="Warning"
+                className="win98-dialog-icon"
+                onError={onImgError}
+              />
+              <div className="win98-dialog-message">
+                <p>
+                  Are you sure you want to run <strong>virus.exe</strong>? This
+                  program may be harmful to your computer.
+                </p>
+                <p>Click <strong>Yes</strong> to run it, or <strong>No</strong> to cancel.</p>
+              </div>
+            </div>
+            <div className="win98-dialog-actions">
+              <button
+                type="button"
+                className="button-retro"
+                onClick={() => setShowVirusWarning(false)}
+              >
+                Yes
+              </button>
+              <button
+                type="button"
+                className="button-retro"
+                autoFocus
+                onClick={() => setShowVirusWarning(false)}
+              >
+                No
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Taskbar */}

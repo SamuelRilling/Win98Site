@@ -1025,6 +1025,119 @@ h1 {
   white-space: nowrap;
 }
 
+/* Virus warning dialog (Win98 style) */
+.virus-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 16, 80, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.win98-dialog {
+  background: var(--win-gray);
+  border-width: 2px;
+  border-style: solid;
+  border-color: var(--win-white) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-white);
+  box-shadow: rgba(0, 0, 0, 0.3) 4px 4px 0px;
+  width: 360px;
+  padding: 0;
+  font-family: "MS Sans Serif", "Microsoft Sans Serif", Arial, sans-serif;
+  font-size: 11px;
+  color: var(--text-dark);
+}
+
+.win98-dialog-titlebar {
+  background: linear-gradient(90deg, var(--win-title) 0%, var(--win-title-end) 100%);
+  color: var(--win-title-text);
+  padding: 3px 6px 3px 6px;
+  font-weight: bold;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  user-select: none;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.55);
+}
+
+.win98-dialog-title-icon {
+  display: inline-flex;
+  align-items: center;
+}
+
+.win98-dialog-title-icon img {
+  width: 14px;
+  height: 14px;
+  image-rendering: pixelated;
+}
+
+.win98-dialog-title-text {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.win98-dialog-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 14px;
+  padding: 0;
+  background: var(--win-btn-face);
+  border-top: 1px solid var(--win-btn-hilight);
+  border-left: 1px solid var(--win-btn-hilight);
+  border-right: 1px solid var(--win-btn-dk-shadow);
+  border-bottom: 1px solid var(--win-btn-dk-shadow);
+  box-shadow: inset -1px -1px 0 var(--win-btn-shadow), inset 1px 1px 0 var(--win-white);
+  color: black;
+  font-size: 9px;
+  font-family: "Marlett", "MS Sans Serif", Arial, sans-serif;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.win98-dialog-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 18px 16px;
+}
+
+.win98-dialog-icon {
+  width: 32px;
+  height: 32px;
+  image-rendering: pixelated;
+  flex-shrink: 0;
+}
+
+.win98-dialog-message {
+  flex: 1;
+  min-width: 0;
+}
+
+.win98-dialog-message p {
+  margin: 0 0 6px 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-dark);
+}
+
+.win98-dialog-message strong {
+  color: var(--accent-red);
+}
+
+.win98-dialog-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  padding: 8px 16px;
+  border-top: 1px solid var(--win-shadow);
+}
+
 .about-title {
   font-family: "MS Sans Serif", "Microsoft Sans Serif", Arial, sans-serif;
   color: var(--text-dark);

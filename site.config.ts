@@ -1,5 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 //  site.config.ts — EDIT THIS FILE to make the portfolio yours.
+import { asset } from "@/lib/utils"
 //
 //  This is the single source of truth for all content. You should not need to
 //  touch the React components for the common case. See README.md for a guide.
@@ -93,7 +94,7 @@ export const site: SiteConfig = {
     help: { title: "Help", icon: `${ICON}/help_book_cool-0.png`, initial: { x: 180, y: 70, w: 500, h: 400 } },
     computer: { title: "My Computer", icon: `${ICON}/cd_drive-4.png`, initial: { x: 280, y: 100, w: 460, h: 360 } },
     recycle: { title: "Recycle Bin", icon: `${ICON}/recycle_bin_full-4.png`, initial: { x: 300, y: 140, w: 420, h: 300 } },
-    virus: { title: "virus.exe", icon: `${ICON}/application-0.png`, initial: { x: 100, y: 100, w: 400, h: 300 } },
+    virus: { title: "virus.exe", icon: asset("/virus.svg"), initial: { x: 100, y: 100, w: 400, h: 300 } },
   },
 
   sections: {
