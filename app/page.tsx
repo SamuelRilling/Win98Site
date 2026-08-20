@@ -15,10 +15,33 @@ const ICON = "https://win98icons.alexmeub.com/icons/png"
 // Build timestamp for deployment verification
 const BUILD_TIME = process.env.NEXT_PUBLIC_BUILD_TIME || "dev"
 
+/** A desktop icon or recycle-bin row. */
+interface DesktopEntry {
+  id: string
+  type: WindowKey
+  label: string
+  cut?: boolean
+}
+
 interface ContextMenuState {
   x: number
   y: number
-  target: "recycle" | "desktop"
+  mode: "desktop" | "bin"
+  entryId: string
+}
+
+interface ClipboardState {
+  entryId: string
+  type: WindowKey
+  label: string
+  cut: boolean
+}
+
+/** Simple counter so pasted icons get unique ids. */
+let nextPasteId = 1
+function freshPasteId() {
+  nextPasteId += 1
+  return `paste-${nextPasteId}`
 }
 
 export default function Home() {
@@ -29,11 +52,19 @@ export default function Home() {
   const [minimized, setMinimized] = useState<Partial<Record<WindowKey, boolean>>>({})
   const [isShutdown, setIsShutdown] = useState(false)
 
-  // Virus.exe state
-  const [virusInRecycleBin, setVirusInRecycleBin] = useState(true)
-  const [virusOnDesktop, setVirusOnDesktop] = useState(false)
+  // Desktop icons and recycle-bin contents
+  const [desktopEntries, setDesktopEntries] = useState<DesktopEntry[]>(() =>
+    sections.desktopIcons.map((t) => ({ id: t, type: t, label: WINDOWS[t].title }))
+  )
+  const [binEntries, setBinEntries] = useState<DesktopEntry[]>([
+    { id: "virus", type: "virus", label: "virus.exe" },
+  ])
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
   const [showVirusWarning, setShowVirusWarning] = useState(false)
+  const [clipboard, setClipboard] = useState<ClipboardState | null>(null)
+  const [renamingId, setRenamingId] = useState<string | null>(null)
+  const [renameDraft, setRenameDraft] = useState("")
+  const [propertiesId, setPropertiesId] = useState<string | null>(null)
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -78,39 +109,194 @@ export default function Home() {
     setIsShutdown(true)
   }
 
-  // Virus.exe context menu handlers
-  const handleRecycleBinContextMenu = (e?: React.MouseEvent<HTMLDivElement>) => {
-    if (!virusInRecycleBin) return
-    setContextMenu({
-      x: e?.clientX ?? 120,
-      y: e?.clientY ?? 200,
-      target: "recycle",
-    })
+  // ── Icon / recycle-bin context menu ────────────────────────────────────────
+  const entryLocation = (id: string): "desktop" | "bin" =>
+    binEntries.some((b) => b.id === id) ? "bin" : "desktop"
+
+  const findEntry = (id: string): DesktopEntry | undefined => {
+    return desktopEntries.find((e) => e.id === id) ?? binEntries.find((e) => e.id === id)
+  }
+
+  const clearCutMarks = () => {
+    setDesktopEntries((d) => d.map((e) => ({ ...e, cut: false })))
+    setBinEntries((b) => b.map((e) => ({ ...e, cut: false })))
+  }
+
+  const openDesktopMenu = (e: React.MouseEvent<HTMLElement> | undefined, id: string) => {
+    if (renamingId) return
+    setContextMenu({ x: e?.clientX ?? 120, y: e?.clientY ?? 200, mode: "desktop", entryId: id })
+  }
+
+  const openBinMenu = (e: React.MouseEvent | undefined, id: string) => {
+    if (renamingId) return
+    setContextMenu({ x: e?.clientX ?? 120, y: e?.clientY ?? 200, mode: "bin", entryId: id })
   }
 
   const closeContextMenu = () => {
     setContextMenu(null)
   }
 
+  const restoreToDesktop = (id: string) => {
+    const item = binEntries.find((e) => e.id === id)
+    if (!item) return
+    setBinEntries((b) => b.filter((e) => e.id !== id))
+    setDesktopEntries((d) => [...d, { ...item, cut: false }])
+  }
+
+  const deleteEntry = (id: string, loc: "desktop" | "bin") => {
+    const item = findEntry(id)
+    if (!item) return
+    if (clipboard?.entryId === id) setClipboard(null)
+    if (loc === "bin") {
+      // Permanently remove from the recycle bin.
+      setBinEntries((b) => b.filter((e) => e.id !== id))
+    } else {
+      // Send to the recycle bin.
+      setDesktopEntries((d) => d.filter((e) => e.id !== id))
+      setBinEntries((b) => [...b, { ...item, cut: false }])
+    }
+  }
+
+  const cutEntry = (id: string) => {
+    const entry = findEntry(id)
+    if (!entry) return
+    const loc = entryLocation(id)
+    if (loc === "bin") {
+      setBinEntries((b) => b.map((e) => ({ ...e, cut: e.id === id })))
+    } else {
+      setDesktopEntries((d) => d.map((e) => ({ ...e, cut: e.id === id })))
+    }
+    setClipboard({ entryId: id, type: entry.type, label: entry.label, cut: true })
+  }
+
+  const copyEntry = (id: string) => {
+    const entry = findEntry(id)
+    if (!entry) return
+    clearCutMarks()
+    setClipboard({ entryId: id, type: entry.type, label: entry.label, cut: false })
+  }
+
+  const pasteFromClipboard = () => {
+    if (!clipboard) return
+    clearCutMarks()
+    if (clipboard.cut) {
+      // Cut + Paste = move to the desktop.
+      const loc = entryLocation(clipboard.entryId)
+      if (loc === "bin") {
+        setBinEntries((b) => b.filter((e) => e.id !== clipboard.entryId))
+      } else {
+        setDesktopEntries((d) => d.filter((e) => e.id !== clipboard.entryId))
+      }
+    }
+    const label = clipboard.cut ? clipboard.label : `${clipboard.label} - Copy`
+    setDesktopEntries((d) => [
+      ...d.filter((e) => e.id !== clipboard.entryId),
+      { id: freshPasteId(), type: clipboard.type, label, cut: false },
+    ])
+    setClipboard(null)
+  }
+
+  const doRename = (id: string, draft: string) => {
+    const label = draft.trim()
+    if (!label) {
+      setRenamingId(null)
+      return
+    }
+    setRenamingId(null)
+    setDesktopEntries((d) => d.map((e) => (e.id === id ? { ...e, label } : e)))
+    setBinEntries((b) => b.map((e) => (e.id === id ? { ...e, label } : e)))
+  }
+
   const handleContextMenuAction = (action: string) => {
+    const menu = contextMenu
+    if (!menu) return
+    const id = menu.entryId
+    const loc = entryLocation(id)
+    const entry = findEntry(id)
+    if (!entry) return
+
     switch (action) {
+      case "open":
       case "restore":
-        if (virusInRecycleBin) {
-          setVirusInRecycleBin(false)
-          setVirusOnDesktop(true)
+        if (loc === "bin") {
+          restoreToDesktop(id)
+        } else if (entry.type === "virus") {
+          setShowVirusWarning(true)
+        } else {
+          open(entry.type)
         }
         break
-      default:
-        // Open, Cut, Copy, Delete, Rename, Properties - no-op for now
+      case "cut":
+        cutEntry(id)
+        break
+      case "copy":
+        copyEntry(id)
+        break
+      case "paste":
+        pasteFromClipboard()
+        break
+      case "delete":
+        deleteEntry(id, loc)
+        break
+      case "rename":
+        setRenamingId(id)
+        setRenameDraft(entry.label)
+        break
+      case "properties":
+        setPropertiesId(id)
         break
     }
     closeContextMenu()
   }
 
-  // Dynamic desktop icons based on virus state
-  const desktopIcons = virusOnDesktop
-    ? [...sections.desktopIcons, "virus" as WindowKey]
-    : sections.desktopIcons
+  const buildMenuItems = () => {
+    const menu = contextMenu
+    if (!menu) return []
+    const entry = findEntry(menu.entryId)
+    if (!entry) return []
+    const isInBin = menu.mode === "bin"
+    const isVirus = entry.type === "virus"
+    const items: {
+      label: string
+      action: string
+      icon?: string
+      disabled?: boolean
+      separatorAfter?: boolean
+    }[] = []
+
+    if (isInBin) {
+      items.push({
+        label: isVirus ? "Restore" : "Open",
+        action: "open",
+        icon: isVirus ? `${ICON}/restore-0.png` : `${ICON}/folder_open-3.png`,
+        separatorAfter: true,
+      })
+    } else {
+      items.push({
+        label: "Open",
+        action: "open",
+        icon: `${ICON}/folder_open-3.png`,
+        separatorAfter: true,
+      })
+    }
+
+    items.push({ label: "Cut", action: "cut", icon: `${ICON}/cut-0.png` })
+    items.push({ label: "Copy", action: "copy", icon: `${ICON}/copy-0.png` })
+    items.push({
+      label: "Paste",
+      action: "paste",
+      icon: `${ICON}/paste-0.png`,
+      disabled: !clipboard,
+      separatorAfter: true,
+    })
+    items.push({ label: "Delete", action: "delete", icon: `${ICON}/delete-0.png`, separatorAfter: true })
+    items.push({ label: "Rename", action: "rename", icon: `${ICON}/rename-0.png` })
+    items.push({ label: "Properties", action: "properties", icon: `${ICON}/property_sheet-4.png` })
+
+    return items
+  }
+
+  // Desktop rendering uses desktopEntries (managed via the context menu).
 
   // File/Edit/View are period chrome; Help is wired to open the Help window.
   const menuBar = (
@@ -373,29 +559,56 @@ export default function Home() {
               Build: {BUILD_TIME}
             </div>
             <div className="window-content">
-              {virusInRecycleBin ? (
-                <div
-                  className="recycle-item"
-                  role="button"
-                  tabIndex={0}
-                  aria-haspopup="menu"
-                  aria-label="virus.exe"
-                  onClick={handleRecycleBinContextMenu}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault()
-                      handleRecycleBinContextMenu()
-                    }
-                  }}
-                >
-                  <img
-                    src={WINDOWS["virus"].icon || asset("/placeholder.svg")}
-                    alt="virus.exe"
-                    style={{ width: "32px", height: "32px", imageRendering: "pixelated" }}
-                    onError={onImgError}
-                  />
-                  <span>virus.exe</span>
-                </div>
+              {binEntries.length ? (
+                binEntries.map((entry) => {
+                  const renaming = renamingId === entry.id
+                  return (
+                    <div
+                      key={entry.id}
+                      className={`recycle-item${entry.cut ? " is-cut" : ""}${
+                        contextMenu && contextMenu.mode === "bin" && contextMenu.entryId === entry.id
+                          ? " is-selected"
+                          : ""
+                      }`}
+                      role="button"
+                      tabIndex={0}
+                      aria-haspopup="menu"
+                      aria-label={entry.label}
+                      onClick={(e) => openBinMenu(e as React.MouseEvent<HTMLDivElement>, entry.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault()
+                          openBinMenu(undefined, entry.id)
+                        }
+                      }}
+                    >
+                      <img
+                        src={WINDOWS[entry.type].icon || asset("/placeholder.svg")}
+                        alt={entry.label}
+                        style={{ width: "32px", height: "32px", imageRendering: "pixelated" }}
+                        onError={onImgError}
+                      />
+                      {renaming ? (
+                        <input
+                          className="recycle-rename-input"
+                          value={renameDraft}
+                          autoFocus
+                          onClick={(e) => e.stopPropagation()}
+                          onMouseDown={(e) => e.stopPropagation()}
+                          onChange={(e) => setRenameDraft(e.target.value)}
+                          onBlur={() => doRename(entry.id, renameDraft)}
+                          onKeyDown={(e) => {
+                            e.stopPropagation()
+                            if (e.key === "Enter") doRename(entry.id, renameDraft)
+                            else if (e.key === "Escape") setRenamingId(null)
+                          }}
+                        />
+                      ) : (
+                        <span>{entry.label}</span>
+                      )}
+                    </div>
+                  )
+                })
               ) : (
                 <div className="recycle-empty">
                   <img
@@ -409,7 +622,7 @@ export default function Home() {
               )}
             </div>
             <div className="status-bar">
-              <span>{virusInRecycleBin ? "1 object(s)" : "0 object(s)"}</span>
+              <span>{binEntries.length} object(s)</span>
               <span>Recycle Bin</span>
             </div>
           </>
@@ -449,23 +662,54 @@ export default function Home() {
 
       {/* Desktop icons column */}
       <div className="desktop-icons">
-        {desktopIcons.map((type) => (
-          <button
-            key={type}
-            onClick={() => {
-              if (type === "virus") {
-                closeContextMenu()
-                if (virusOnDesktop) setShowVirusWarning(true)
-              } else {
-                open(type)
-              }
-            }}
-            className="icon-item"
-          >
-            <img src={WINDOWS[type].icon || asset("/placeholder.svg")} alt={WINDOWS[type].title} onError={onImgError} />
-            <span>{WINDOWS[type].title}</span>
-          </button>
-        ))}
+        {desktopEntries.map((entry) => {
+          const renaming = renamingId === entry.id
+          const selected =
+            contextMenu && contextMenu.mode === "desktop" && contextMenu.entryId === entry.id
+          return (
+            <div
+              key={entry.id}
+              role="button"
+              tabIndex={0}
+              aria-haspopup="menu"
+              aria-label={entry.label}
+              className={`icon-item${renaming ? " is-renaming" : ""}${entry.cut ? " is-cut" : ""}${
+                selected ? " is-selected" : ""
+              }`}
+              onClick={(e) => openDesktopMenu(e as React.MouseEvent<HTMLDivElement>, entry.id)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault()
+                  openDesktopMenu(undefined, entry.id)
+                }
+              }}
+            >
+              <img
+                src={WINDOWS[entry.type].icon || asset("/placeholder.svg")}
+                alt={entry.label}
+                onError={onImgError}
+              />
+              {renaming ? (
+                <input
+                  className="desktop-rename-input"
+                  value={renameDraft}
+                  autoFocus
+                  onClick={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onChange={(e) => setRenameDraft(e.target.value)}
+                  onBlur={() => doRename(entry.id, renameDraft)}
+                  onKeyDown={(e) => {
+                    e.stopPropagation()
+                    if (e.key === "Enter") doRename(entry.id, renameDraft)
+                    else if (e.key === "Escape") setRenamingId(null)
+                  }}
+                />
+              ) : (
+                <span>{entry.label}</span>
+              )}
+            </div>
+          )
+        })}
       </div>
 
       {/* Floating windows */}
@@ -492,15 +736,7 @@ export default function Home() {
         <WinContextMenu
           x={contextMenu.x}
           y={contextMenu.y}
-          items={[
-            { label: "Open", action: "open", icon: `${ICON}/folder_open-3.png` },
-            { label: "Cut", action: "cut", icon: `${ICON}/cut-0.png`, separatorAfter: true },
-            { label: "Copy", action: "copy", icon: `${ICON}/copy-0.png` },
-            { label: "Delete", action: "delete", icon: `${ICON}/delete-0.png`, separatorAfter: true },
-            { label: "Rename", action: "rename", icon: `${ICON}/rename-0.png` },
-            { label: "Properties", action: "properties", icon: `${ICON}/property_sheet-4.png`, separatorAfter: true },
-            { label: "Restore", action: "restore", icon: `${ICON}/restore-0.png` },
-          ]}
+          items={buildMenuItems()}
           onAction={handleContextMenuAction}
           onClose={closeContextMenu}
         />
@@ -578,6 +814,81 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      {/* Properties dialog */}
+      {propertiesId &&
+        (() => {
+          const entry = findEntry(propertiesId)
+          if (!entry) return null
+          const loc = entryLocation(propertiesId)
+          const typeName =
+            entry.type === "virus"
+              ? "Application (virus.exe)"
+              : entry.type === "recycle"
+                ? "System Folder"
+                : "Shortcut"
+          const icon = WINDOWS[entry.type].icon || asset("/placeholder.svg")
+          return (
+            <div
+              className="prop-dialog-overlay"
+              onMouseDown={() => setPropertiesId(null)}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") setPropertiesId(null)
+              }}
+            >
+              <div
+                className="win98-dialog prop-dialog"
+                role="dialog"
+                aria-modal="true"
+                onMouseDown={(e) => e.stopPropagation()}
+              >
+                <div className="win98-dialog-titlebar">
+                  <span className="win98-dialog-title-icon">
+                    <img src={icon} alt="" width={14} height={14} onError={onImgError} />
+                  </span>
+                  <span className="win98-dialog-title-text">{entry.label} Properties</span>
+                  <button
+                    type="button"
+                    className="win98-dialog-close"
+                    aria-label="Close"
+                    onClick={() => setPropertiesId(null)}
+                  >
+                    ×
+                  </button>
+                </div>
+                <div className="prop-dialog-body">
+                  <div className="prop-dialog-head">
+                    <img src={icon} alt="" className="prop-dialog-bigicon" onError={onImgError} />
+                    <span className="prop-dialog-name">{entry.label}</span>
+                  </div>
+                  <div className="prop-dialog-form">
+                    <div className="prop-row">
+                      <span className="prop-label">Type:</span>
+                      <span className="prop-value">{typeName}</span>
+                    </div>
+                    <div className="prop-row">
+                      <span className="prop-label">Location:</span>
+                      <span className="prop-value">{loc === "bin" ? "Recycle Bin" : "Desktop"}</span>
+                    </div>
+                    <div className="prop-row">
+                      <span className="prop-label">Size:</span>
+                      <span className="prop-value">{entry.type === "virus" ? "1.44 MB" : "0 KB (shortcut)"}</span>
+                    </div>
+                    <div className="prop-row">
+                      <span className="prop-label">Created:</span>
+                      <span className="prop-value">August 20, 1998</span>
+                    </div>
+                  </div>
+                  <div className="prop-dialog-actions">
+                    <button type="button" className="button-retro" autoFocus onClick={() => setPropertiesId(null)}>
+                      OK
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+        })()}
 
       {/* Taskbar */}
       <div className="taskbar">

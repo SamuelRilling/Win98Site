@@ -237,6 +237,27 @@ header {
   image-rendering: pixelated;
 }
 
+/* Selected (context menu open) and cut states for desktop icons */
+.icon-item.is-selected span {
+  outline: 1px dotted white;
+  background: rgba(0, 0, 128, 0.5);
+}
+
+.icon-item.is-cut {
+  opacity: 0.55;
+}
+
+.desktop-rename-input {
+  width: 72px;
+  font-size: 11px;
+  font-family: inherit;
+  text-align: center;
+  background: #fff;
+  color: #000;
+  border: 1px solid #000;
+  padding: 1px 2px;
+}
+
 /* Welcome to Windows 98 screen */
 .welcome-body {
   flex: 1;
@@ -1025,6 +1046,27 @@ h1 {
   white-space: nowrap;
 }
 
+.recycle-item.is-selected {
+  background: var(--win-highlight);
+  color: var(--win-highlight-text);
+  border-color: var(--win-highlight-text);
+}
+
+.recycle-item.is-cut {
+  opacity: 0.55;
+}
+
+.recycle-rename-input {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-family: inherit;
+  background: #fff;
+  color: #000;
+  border: 1px solid var(--win-dark-shadow);
+  padding: 1px 4px;
+}
+
 /* Virus warning dialog (Win98 style) */
 .virus-dialog-overlay {
   position: fixed;
@@ -1136,6 +1178,80 @@ h1 {
   gap: 16px;
   padding: 8px 16px;
   border-top: 1px solid var(--win-shadow);
+}
+
+/* Properties dialog */
+.prop-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2100;
+}
+
+.win98-dialog.prop-dialog {
+  width: 400px;
+}
+
+.prop-dialog-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.prop-dialog-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.prop-dialog-bigicon {
+  width: 40px;
+  height: 40px;
+  image-rendering: pixelated;
+}
+
+.prop-dialog-name {
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--text-dark);
+}
+
+.prop-dialog-form {
+  border: 1px solid var(--win-shadow);
+  border-top: 1px solid var(--win-white);
+  border-left: 1px solid var(--win-white);
+  background: #fff;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.prop-row {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.prop-label {
+  width: 76px;
+  flex-shrink: 0;
+  font-weight: bold;
+  color: var(--text-dark);
+}
+
+.prop-value {
+  flex: 1;
+  min-width: 0;
+  color: var(--text-dark);
+}
+
+.prop-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .about-title {

@@ -94,11 +94,16 @@ export function WinContextMenu({ x, y, items, onAction, onClose }: WinContextMen
     }
 
     document.addEventListener("keydown", handleKeyDown)
-    // Focus first item on mount
-    setTimeout(updateFocus, 0)
 
     return () => document.removeEventListener("keydown", handleKeyDown)
   }, [items, onAction, onClose])
+
+  // Focus the menu container on mount so keyboard navigation works. The first
+  // row is NOT auto-focused, so no item appears highlighted until the user
+  // either hovers a row or presses an arrow key.
+  useEffect(() => {
+    menuRef.current?.focus()
+  }, [])
 
   // Click outside to close
   useEffect(() => {
@@ -116,6 +121,7 @@ export function WinContextMenu({ x, y, items, onAction, onClose }: WinContextMen
       ref={menuRef}
       className="context-menu"
       role="menu"
+      tabIndex={-1}
       style={{ left: x, top: y }}
       onContextMenu={(e) => e.preventDefault()}
     >
