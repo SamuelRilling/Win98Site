@@ -791,8 +791,14 @@ h1 {
 .context-menu {
   position: fixed;
   background: var(--win-gray);
-  border: 2px outset var(--win-white);
-  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+  border-top: 1px solid var(--win-white);
+  border-left: 1px solid var(--win-white);
+  border-right: 1px solid var(--win-dark-shadow);
+  border-bottom: 1px solid var(--win-dark-shadow);
+  box-shadow:
+    inset 1px 1px 0 var(--win-white),
+    inset -1px -1px 0 var(--win-shadow),
+    2px 2px 4px rgba(0, 0, 0, 0.4);
   min-width: 160px;
   max-width: 280px;
   z-index: 1000;
@@ -806,8 +812,8 @@ h1 {
 .context-menu-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 3px 20px 3px 8px;
+  gap: 6px;
+  padding: 3px 20px 3px 2px;
   cursor: default;
   white-space: nowrap;
   outline: none;
@@ -824,17 +830,24 @@ h1 {
   cursor: not-allowed;
 }
 
+.context-menu-icon-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  flex-shrink: 0;
+}
+
 .context-menu-icon {
   width: 16px;
   height: 16px;
   image-rendering: pixelated;
-  flex-shrink: 0;
 }
 
 .context-menu-separator {
   height: 1px;
   background: var(--win-shadow);
-  margin: 2px 4px;
+  margin: 2px 2px 2px 22px;
   border-bottom: 1px solid var(--win-white);
 }
 

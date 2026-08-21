@@ -26,8 +26,8 @@ interface DesktopEntry {
 interface ContextMenuState {
   x: number
   y: number
-  mode: "desktop" | "bin"
-  entryId: string
+  mode: "desktop" | "bin" | "background"
+  entryId: string | null
 }
 
 interface ClipboardState {
@@ -124,12 +124,22 @@ export default function Home() {
 
   const openDesktopMenu = (e: React.MouseEvent<HTMLElement> | undefined, id: string) => {
     if (renamingId) return
+    e?.preventDefault()
+    e?.stopPropagation()
     setContextMenu({ x: e?.clientX ?? 120, y: e?.clientY ?? 200, mode: "desktop", entryId: id })
   }
 
   const openBinMenu = (e: React.MouseEvent | undefined, id: string) => {
     if (renamingId) return
+    e?.preventDefault()
+    e?.stopPropagation()
     setContextMenu({ x: e?.clientX ?? 120, y: e?.clientY ?? 200, mode: "bin", entryId: id })
+  }
+
+  const openBackgroundMenu = (e: React.MouseEvent<HTMLElement>) => {
+    if (renamingId) return
+    e.preventDefault()
+    setContextMenu({ x: e.clientX, y: e.clientY, mode: "background", entryId: null })
   }
 
   const closeContextMenu = () => {
@@ -210,6 +220,10 @@ export default function Home() {
   const handleContextMenuAction = (action: string) => {
     const menu = contextMenu
     if (!menu) return
+    if (menu.mode === "background" || !menu.entryId) {
+      closeContextMenu()
+      return
+    }
     const id = menu.entryId
     const loc = entryLocation(id)
     const entry = findEntry(id)
@@ -249,9 +263,20 @@ export default function Home() {
     closeContextMenu()
   }
 
+  const buildBackgroundMenuItems = () => [
+    { label: "Arrange Icons", action: "noop" },
+    { label: "Line up Icons", action: "noop", separatorAfter: true },
+    { label: "Paste", action: "noop", icon: `${ICON}/paste-0.png`, disabled: !clipboard },
+    { label: "Paste Shortcut", action: "noop", disabled: !clipboard, separatorAfter: true },
+    { label: "New", action: "noop", separatorAfter: true },
+    { label: "Properties", action: "noop", icon: `${ICON}/property_sheet-4.png` },
+  ]
+
   const buildMenuItems = () => {
     const menu = contextMenu
     if (!menu) return []
+    if (menu.mode === "background") return buildBackgroundMenuItems()
+    if (!menu.entryId) return []
     const entry = findEntry(menu.entryId)
     if (!entry) return []
     const isInBin = menu.mode === "bin"
@@ -574,7 +599,8 @@ export default function Home() {
                       tabIndex={0}
                       aria-haspopup="menu"
                       aria-label={entry.label}
-                      onClick={(e) => openBinMenu(e as React.MouseEvent<HTMLDivElement>, entry.id)}
+                      onContextMenu={(e) => openBinMenu(e as React.MouseEvent<HTMLDivElement>, entry.id)}
+                      onDoubleClick={() => restoreToDesktop(entry.id)}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" || e.key === " ") {
                           e.preventDefault()
@@ -638,7 +664,13 @@ export default function Home() {
     : undefined
 
   return (
-    <main className="desktop" style={desktopStyle}>
+    <main
+      className="desktop"
+      style={desktopStyle}
+      onDoubleClick={(e) => {
+        if (e.target === e.currentTarget) openBackgroundMenu(e)
+      }}
+    >
       <h1 className="sr-only">Portfolio of {site.identity.name}</h1>
 
       {isShutdown && (
@@ -676,7 +708,8 @@ export default function Home() {
               className={`icon-item${renaming ? " is-renaming" : ""}${entry.cut ? " is-cut" : ""}${
                 selected ? " is-selected" : ""
               }`}
-              onClick={(e) => openDesktopMenu(e as React.MouseEvent<HTMLDivElement>, entry.id)}
+              onContextMenu={(e) => openDesktopMenu(e as React.MouseEvent<HTMLDivElement>, entry.id)}
+              onDoubleClick={() => (entry.type === "virus" ? setShowVirusWarning(true) : open(entry.type))}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault()
