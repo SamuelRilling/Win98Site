@@ -1,12 +1,10 @@
 "use client"
 
 import { useEffect, useRef, type MouseEvent, Fragment } from "react"
-import { onImgError } from "@/lib/utils"
 
 interface ContextMenuItem {
   label: string
   action: string
-  icon?: string
   disabled?: boolean
   separatorAfter?: boolean
 }
@@ -140,9 +138,6 @@ export function WinContextMenu({ x, y, items, onAction, onClose }: WinContextMen
               onMouseEnter={() => !isDisabled && (focusedIndexRef.current = index)}
               aria-disabled={isDisabled}
             >
-              <span className="context-menu-icon-slot">
-                {item.icon && <img src={item.icon} alt="" onError={onImgError} className="context-menu-icon" />}
-              </span>
               <span>{item.label}</span>
             </div>
             {item.separatorAfter && <div className="context-menu-separator" role="separator" />}

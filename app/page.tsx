@@ -266,10 +266,10 @@ export default function Home() {
   const buildBackgroundMenuItems = () => [
     { label: "Arrange Icons", action: "noop" },
     { label: "Line up Icons", action: "noop", separatorAfter: true },
-    { label: "Paste", action: "noop", icon: `${ICON}/paste-0.png`, disabled: !clipboard },
+    { label: "Paste", action: "noop", disabled: !clipboard },
     { label: "Paste Shortcut", action: "noop", disabled: !clipboard, separatorAfter: true },
     { label: "New", action: "noop", separatorAfter: true },
-    { label: "Properties", action: "noop", icon: `${ICON}/property_sheet-4.png` },
+    { label: "Properties", action: "noop" },
   ]
 
   const buildMenuItems = () => {
@@ -280,43 +280,30 @@ export default function Home() {
     const entry = findEntry(menu.entryId)
     if (!entry) return []
     const isInBin = menu.mode === "bin"
-    const isVirus = entry.type === "virus"
     const items: {
       label: string
       action: string
-      icon?: string
       disabled?: boolean
       separatorAfter?: boolean
     }[] = []
 
-    if (isInBin) {
-      items.push({
-        label: isVirus ? "Restore" : "Open",
-        action: "open",
-        icon: isVirus ? `${ICON}/restore-0.png` : `${ICON}/folder_open-3.png`,
-        separatorAfter: true,
-      })
-    } else {
-      items.push({
-        label: "Open",
-        action: "open",
-        icon: `${ICON}/folder_open-3.png`,
-        separatorAfter: true,
-      })
-    }
+    items.push({
+      label: isInBin ? "Restore" : "Open",
+      action: "open",
+      separatorAfter: true,
+    })
 
-    items.push({ label: "Cut", action: "cut", icon: `${ICON}/cut-0.png` })
-    items.push({ label: "Copy", action: "copy", icon: `${ICON}/copy-0.png` })
+    items.push({ label: "Cut", action: "cut" })
+    items.push({ label: "Copy", action: "copy" })
     items.push({
       label: "Paste",
       action: "paste",
-      icon: `${ICON}/paste-0.png`,
       disabled: !clipboard,
       separatorAfter: true,
     })
-    items.push({ label: "Delete", action: "delete", icon: `${ICON}/delete-0.png`, separatorAfter: true })
-    items.push({ label: "Rename", action: "rename", icon: `${ICON}/rename-0.png` })
-    items.push({ label: "Properties", action: "properties", icon: `${ICON}/property_sheet-4.png` })
+    items.push({ label: "Delete", action: "delete", separatorAfter: true })
+    items.push({ label: "Rename", action: "rename" })
+    items.push({ label: "Properties", action: "properties" })
 
     return items
   }
@@ -667,7 +654,7 @@ export default function Home() {
     <main
       className="desktop"
       style={desktopStyle}
-      onDoubleClick={(e) => {
+      onContextMenu={(e) => {
         if (e.target === e.currentTarget) openBackgroundMenu(e)
       }}
     >
