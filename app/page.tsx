@@ -65,6 +65,7 @@ export default function Home() {
   const [renamingId, setRenamingId] = useState<string | null>(null)
   const [renameDraft, setRenameDraft] = useState("")
   const [propertiesId, setPropertiesId] = useState<string | null>(null)
+  const [showDisplayProperties, setShowDisplayProperties] = useState(false)
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -220,7 +221,13 @@ export default function Home() {
   const handleContextMenuAction = (action: string) => {
     const menu = contextMenu
     if (!menu) return
-    if (menu.mode === "background" || !menu.entryId) {
+    if (menu.mode === "background") {
+      if (action === "paste") pasteFromClipboard()
+      else if (action === "properties") setShowDisplayProperties(true)
+      closeContextMenu()
+      return
+    }
+    if (!menu.entryId) {
       closeContextMenu()
       return
     }
@@ -264,12 +271,12 @@ export default function Home() {
   }
 
   const buildBackgroundMenuItems = () => [
-    { label: "Arrange Icons", action: "noop" },
-    { label: "Line up Icons", action: "noop", separatorAfter: true },
-    { label: "Paste", action: "noop", disabled: !clipboard },
-    { label: "Paste Shortcut", action: "noop", disabled: !clipboard, separatorAfter: true },
-    { label: "New", action: "noop", separatorAfter: true },
-    { label: "Properties", action: "noop" },
+    { label: "Arrange Icons", action: "noop", disabled: true },
+    { label: "Line up Icons", action: "noop", disabled: true, separatorAfter: true },
+    { label: "Paste", action: "paste", disabled: !clipboard },
+    { label: "Paste Shortcut", action: "noop", disabled: true, separatorAfter: true },
+    { label: "New", action: "noop", disabled: true, separatorAfter: true },
+    { label: "Properties", action: "properties" },
   ]
 
   const buildMenuItems = () => {
@@ -909,6 +916,58 @@ export default function Home() {
             </div>
           )
         })()}
+
+      {/* Display Properties dialog */}
+      {showDisplayProperties && (
+        <div className="prop-dialog-overlay" onMouseDown={() => setShowDisplayProperties(false)}>
+          <div
+            className="win98-dialog prop-dialog"
+            role="dialog"
+            aria-modal="true"
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <div className="win98-dialog-titlebar">
+              <span className="win98-dialog-title-icon">
+                <img src={`${ICON}/display_properties-0.png`} alt="" width={14} height={14} onError={onImgError} />
+              </span>
+              <span className="win98-dialog-title-text">Display Properties</span>
+              <button
+                type="button"
+                className="win98-dialog-close"
+                aria-label="Close"
+                onClick={() => setShowDisplayProperties(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="prop-dialog-body">
+              <div className="prop-dialog-form">
+                <div className="prop-row">
+                  <span className="prop-label">Wallpaper:</span>
+                  <span className="prop-value">{site.theme.wallpaper ? "Custom" : "(None)"}</span>
+                </div>
+                <div className="prop-row">
+                  <span className="prop-label">Scheme:</span>
+                  <span className="prop-value">Windows Standard</span>
+                </div>
+                <div className="prop-row">
+                  <span className="prop-label">Color depth:</span>
+                  <span className="prop-value">256 Colors</span>
+                </div>
+                <div className="prop-row">
+                  <span className="prop-label">Screen area:</span>
+                  <span className="prop-value">800 x 600 pixels</span>
+                </div>
+              </div>
+              <div className="prop-dialog-actions">
+                <button type="button" className="button-retro" autoFocus onClick={() => setShowDisplayProperties(false)}>
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Taskbar */}
       <div className="taskbar">
