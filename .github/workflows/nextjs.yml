@@ -1,11 +1,11 @@
-# Builds the static Next.js export and deploys it to GitHub Pages on every push
-# to main. The base path is derived from the repository name automatically.
+# Builds the static Next.js export and deploys it to GitHub Pages on every push.
+# The base path is derived from the repository name automatically.
 name: Deploy to GitHub Pages
 
 on:
-  # Runs on pushes targeting the default branch
+  # Runs on every push to any branch; the workflow always runs on the branch
+  # the push was made to (GitHub Actions checks out the pushed branch/commit).
   push:
-    branches: ["main"]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -16,10 +16,11 @@ permissions:
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+# Ensure only one deployment per branch at a time.
+# The group includes the branch name (ref_name) so deployments from different
+# branches don't block or skip each other.
 concurrency:
-  group: "pages"
+  group: "pages-${{ github.ref_name }}"
   cancel-in-progress: false
 
 jobs:
