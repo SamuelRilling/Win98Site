@@ -1,11 +1,12 @@
 "use client"
 
-import { useEffect, useState, type ReactNode } from "react"
+import { useEffect, useRef, useState, type ReactNode } from "react"
 import { WinWindow } from "@/components/win-window"
 import { TaskbarClock } from "@/components/taskbar-clock"
 import { WinContextMenu } from "@/components/win-context-menu"
 import { asset, onImgError } from "@/lib/utils"
 import { site, type WindowKey } from "@/site.config"
+import { VIRUS_CONFIG, getVirusConfig, type VirusConfig } from "@/virus-config"
 
 const { windows: WINDOWS, sections } = site
 
@@ -37,11 +38,191 @@ interface ClipboardState {
   cut: boolean
 }
 
+interface ErrorDialog {
+  id: string
+  x: number
+  y: number
+  message: string
+}
+
 /** Simple counter so pasted icons get unique ids. */
 let nextPasteId = 1
 function freshPasteId() {
   nextPasteId += 1
   return `paste-${nextPasteId}`
+}
+
+/** Animated body for the fake virus-installer window. */
+function VirusScannerBody({ cfg }: { cfg: VirusConfig }) {
+  const [progress, setProgress] = useState(0)
+  const [activeMessageIndex, setActiveMessageIndex] = useState(0)
+
+  // Store config values in refs so the animation effect runs only once,
+  // even if the parent re-renders with a new cfg object reference.
+  const messagesRef = useRef(cfg.scanner.messages)
+  const installDurationRef = useRef(cfg.scanner.installDuration)
+  const accentColorRef = useRef(cfg.scanner.accentColor)
+
+  useEffect(() => {
+    const start = Date.now()
+    const total = installDurationRef.current
+    const messages = messagesRef.current
+
+    const animInterval = setInterval(() => {
+      const elapsed = Date.now() - start
+      const pct = Math.min(100, (elapsed / total) * 100)
+      setProgress(pct)
+
+      const msgIdx = Math.min(
+        messages.length - 1,
+        Math.floor((elapsed / total) * messages.length)
+      )
+      setActiveMessageIndex(msgIdx)
+
+      if (pct >= 100) clearInterval(animInterval)
+    }, 50)
+
+    return () => clearInterval(animInterval)
+  }, [])
+
+  return (
+    <div className="window-content virus-scanner-window">
+      <div className="virus-scanner-messages">
+        {messagesRef.current.map((msg, i) => (
+          <div
+            key={i}
+            className={`virus-scanner-message ${i === activeMessageIndex ? "active" : ""}`}
+          >
+            {">"} {msg}
+          </div>
+        ))}
+      </div>
+      <div className="virus-progress-container">
+        <div
+          className="virus-progress-bar"
+          style={{
+            width: `${progress}%`,
+            backgroundColor: accentColorRef.current,
+          }}
+        />
+      </div>
+      <div className="virus-scanner-status">
+        Installation Progress: {Math.round(progress)}%
+      </div>
+    </div>
+  )
+}
+
+/** Scrolling marquee overlay with cycling background colors. */
+function VirusMarquee({ cfg }: { cfg: VirusConfig }) {
+  const [colorIndex, setColorIndex] = useState(0)
+  const [msg, setMsg] = useState("")
+
+  // Store config values in refs so effects only run once
+  const colorsRef = useRef(cfg.marquee.colors)
+  const fullTextRef = useRef(cfg.marquee.text)
+  const textIdxRef = useRef(0)
+
+  // Cycle background color every 1 second
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setColorIndex((i) => (i + 1) % colorsRef.current.length)
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Typewriter effect for the marquee text
+  useEffect(() => {
+    const speed = 30
+    const interval = setInterval(() => {
+      textIdxRef.current += 1
+      setMsg(fullTextRef.current.slice(0, textIdxRef.current))
+      if (textIdxRef.current >= fullTextRef.current.length) clearInterval(interval)
+    }, speed)
+    return () => clearInterval(interval)
+  }, [])
+
+  return (
+    <div
+      className="virus-marquee"
+      style={{
+        backgroundColor: colorsRef.current[colorIndex],
+        fontSize: cfg.marquee.fontSize,
+        fontFamily: cfg.marquee.fontFamily,
+        color: cfg.marquee.textColor,
+      }}
+    >
+      <span className="virus-marquee-text">{msg}</span>
+    </div>
+  )
+}
+
+/** Blue Screen of Death overlay with auto-restore countdown. */
+function BsodOverlay({ cfg, countdown }: { cfg: VirusConfig; countdown: number }) {
+  const lines = cfg.bsod.message.split("\n\n")
+
+  return (
+    <div className="bsod-overlay" style={{ backgroundColor: cfg.bsod.backgroundColor }}>
+      <pre
+        className="bsod-text"
+        style={{
+          color: cfg.bsod.textColor,
+          fontSize: cfg.bsod.fontSize,
+          fontFamily: cfg.bsod.fontFamily,
+        }}
+      >
+        {lines.map((line, i) => (
+          <div key={i}>{line}</div>
+        ))}
+        <span className="bsod-countdown">{countdown > 0 ? countdown : "0"}</span>
+      </pre>
+    </div>
+  )
+}
+
+/** Individual fake error dialog that floats at a random position. */
+function ErrorDialog({
+  x,
+  y,
+  message,
+  onClose,
+}: {
+  x: number
+  y: number
+  message: string
+  onClose: () => void
+}) {
+  return (
+    <div
+      className="win98-dialog virus-error-dialog"
+      role="alertdialog"
+      aria-modal="true"
+      style={{ left: x, top: y, position: "fixed" }}
+    >
+      <div className="win98-dialog-titlebar">
+        <span className="win98-dialog-title-text">Error</span>
+        <button
+          type="button"
+          className="win98-dialog-close"
+          aria-label="Close"
+          onClick={onClose}
+        >
+          ×
+        </button>
+      </div>
+      <div className="win98-dialog-body">
+        <span className="virus-error-icon" role="img" aria-label="warning">
+          ⚠
+        </span>
+        <span className="virus-error-message">{message}</span>
+      </div>
+      <div className="win98-dialog-actions">
+        <button type="button" className="button-retro" onClick={onClose}>
+          OK
+        </button>
+      </div>
+    </div>
+  )
 }
 
 export default function Home() {
@@ -61,11 +242,143 @@ export default function Home() {
   ])
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
   const [showVirusWarning, setShowVirusWarning] = useState(false)
+  const [virusActive, setVirusActive] = useState(false)
+  const [virusJitter, setVirusJitter] = useState(false)
+  const [bsodVisible, setBsodVisible] = useState(false)
+  const [bsodCountdown, setBsodCountdown] = useState(0)
+  const [errorDialogs, setErrorDialogs] = useState<ErrorDialog[]>([])
   const [clipboard, setClipboard] = useState<ClipboardState | null>(null)
   const [renamingId, setRenamingId] = useState<string | null>(null)
   const [renameDraft, setRenameDraft] = useState("")
   const [propertiesId, setPropertiesId] = useState<string | null>(null)
   const [showDisplayProperties, setShowDisplayProperties] = useState(false)
+  const [virusRunning, setVirusRunning] = useState(false)
+
+  // Virus sequence timer management
+  const virusTimers = useRef<{ timeouts: NodeJS.Timeout[]; intervals: NodeJS.Timeout[] }>({
+    timeouts: [],
+    intervals: [],
+  })
+
+  const clearVirusTimers = () => {
+    virusTimers.current.timeouts.forEach((t) => clearTimeout(t))
+    virusTimers.current.intervals.forEach((t) => clearInterval(t))
+    virusTimers.current = { timeouts: [], intervals: [] }
+  }
+
+  const addTimeout = (fn: () => void, ms: number) => {
+    const t = setTimeout(fn, ms)
+    virusTimers.current.timeouts.push(t)
+  }
+
+  const addInterval = (fn: () => void, ms: number) => {
+    const t = setInterval(fn, ms)
+    virusTimers.current.intervals.push(t)
+  }
+
+  const randomBetween = (min: number, max: number) => Math.random() * (max - min) + min
+
+  const randomChoice = <T,>(arr: readonly T[]): T => arr[Math.floor(Math.random() * arr.length)]
+
+  const spawnErrorDialogs = (cfg: VirusConfig) => {
+    let waveCount = 0
+    const maxWaves = Math.ceil(
+      (cfg.timing.bsodStartDelay - cfg.timing.errorsStartDelay) / cfg.errors.waveInterval
+    )
+    const interval = setInterval(() => {
+      for (let i = 0; i < cfg.errors.countPerWave; i++) {
+        const id = `virus-error-${Date.now()}-${i}`
+        const x = randomBetween(40, window.innerWidth - 260)
+        const y = randomBetween(40, window.innerHeight - 170)
+        const message = randomChoice(cfg.errors.messages)
+        setErrorDialogs((prev) => [
+          ...prev,
+          { id, x, y, message },
+        ])
+
+        // Auto-dismiss individual dialog
+        setTimeout(() => {
+          setErrorDialogs((prev) => prev.filter((d) => d.id !== id))
+        }, cfg.errors.autoDismiss)
+      }
+      waveCount++
+      if (waveCount >= maxWaves) clearInterval(interval)
+    }, cfg.errors.waveInterval)
+    virusTimers.current.intervals.push(interval)
+  }
+
+  const startCountdown = (seconds: number) => {
+    setBsodCountdown(seconds)
+    let remaining = seconds
+    const interval = setInterval(() => {
+      remaining -= 1
+      setBsodCountdown(remaining)
+      if (remaining <= 0) {
+        clearInterval(interval)
+      }
+    }, 1000)
+    virusTimers.current.intervals.push(interval)
+  }
+
+  const restoreEverything = (cfg: VirusConfig) => {
+    clearVirusTimers()
+    setVirusRunning(false)
+    setVirusActive(false)
+    setVirusJitter(false)
+    setBsodVisible(false)
+    setBsodCountdown(0)
+    setErrorDialogs([])
+    setShowVirusWarning(false)
+    // Close the virus installer window if still open
+    close("virus")
+    // Move virus.exe back to the Recycle Bin
+    setDesktopEntries((d) => d.filter((e) => e.type !== "virus"))
+    setBinEntries((b) => {
+      // Only add back if not already present
+      if (b.some((e) => e.type === "virus")) return b
+      return [...b, { id: "virus", type: "virus", label: "virus.exe" }]
+    })
+  }
+
+  const startVirusSequence = () => {
+    if (virusRunning) return
+    setVirusRunning(true)
+    const cfg = getVirusConfig()
+    clearVirusTimers()
+
+    // Phase 1: Open the virus-installer window
+    addTimeout(() => open("virus"), cfg.timing.scannerStartDelay)
+
+    // Phase 2: Desktop icon jitter
+    addTimeout(() => setVirusJitter(true), cfg.timing.jitterStartDelay)
+
+    // Phase 3: Error dialog flood
+    addTimeout(() => spawnErrorDialogs(cfg), cfg.timing.errorsStartDelay)
+
+    // Phase 4: BSOD takes over
+    addTimeout(() => {
+      setBsodVisible(true)
+      startCountdown(Math.round(cfg.bsod.duration / 1000))
+    }, cfg.timing.bsodStartDelay)
+
+    // Phase 5: Restore everything
+    addTimeout(() => restoreEverything(cfg), cfg.timing.totalDuration)
+  }
+
+  const handleVirusYes = () => {
+    setShowVirusWarning(false)
+    setVirusActive(true)
+    startVirusSequence()
+  }
+
+  const handleVirusNo = () => {
+    setShowVirusWarning(false)
+  }
+
+  useEffect(() => {
+    // Cleanup timers on unmount
+    return () => clearVirusTimers()
+  }, [])
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -647,6 +960,8 @@ export default function Home() {
             </div>
           </>
         )
+      case "virus":
+        return <VirusScannerBody cfg={getVirusConfig()} />
     }
   }
 
@@ -659,13 +974,16 @@ export default function Home() {
 
   return (
     <main
-      className="desktop"
+      className={`desktop${virusActive ? " virus-active" : ""}${virusJitter ? " virus-jitter-icons" : ""}`}
       style={desktopStyle}
       onContextMenu={(e) => {
         if (e.target === e.currentTarget) openBackgroundMenu(e)
       }}
     >
       <h1 className="sr-only">Portfolio of {site.identity.name}</h1>
+
+      {/* Virus marquee (scrolling splash text) */}
+      {virusActive && <VirusMarquee cfg={getVirusConfig()} />}
 
       {isShutdown && (
         <div
@@ -825,7 +1143,7 @@ export default function Home() {
               <button
                 type="button"
                 className="button-retro"
-                onClick={() => setShowVirusWarning(false)}
+                onClick={handleVirusYes}
               >
                 Yes
               </button>
@@ -833,7 +1151,7 @@ export default function Home() {
                 type="button"
                 className="button-retro"
                 autoFocus
-                onClick={() => setShowVirusWarning(false)}
+                onClick={handleVirusNo}
               >
                 No
               </button>
@@ -1021,6 +1339,20 @@ export default function Home() {
 
         <TaskbarClock />
       </div>
+
+       {/* BSOD overlay (final phase of virus) */}
+       {bsodVisible && <BsodOverlay cfg={getVirusConfig()} countdown={bsodCountdown} />}
+
+       {/* Floating fake error dialogs */}
+       {errorDialogs.map((dialog) => (
+         <ErrorDialog
+           key={dialog.id}
+           x={dialog.x}
+           y={dialog.y}
+           message={dialog.message}
+           onClose={() => setErrorDialogs((prev) => prev.filter((d) => d.id !== dialog.id))}
+         />
+       ))}
     </main>
   )
 }
