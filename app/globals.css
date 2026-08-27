@@ -1449,7 +1449,6 @@ h1 {
 /* Color shift / glitch overlay on the desktop body */
 .desktop.virus-active {
   animation: virusHueShift 4s infinite linear alternate;
-  position: relative;
 }
 
 .desktop.virus-active::before {
