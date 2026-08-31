@@ -106,11 +106,11 @@ export const site: SiteConfig = {
   welcome: {
     heading: "Welcome",
     paragraphs: [
-      "Welcome to my corner of the web i rebuilt as my first computer experience.",
-      "Take a moment to click around: every icon opens a window with something to explore.",
-      "To open something, just click it.",
+      "hi, i'm Sam. I Vibe Coded my personal website to emulate the feel of adesktop of a Windows 98 OS",
+      "Don't expect it to run anything in the conventional way is still only a site. (For Nerds: it's built with Next.js 16, React 19, TypeScript, and Tailwind CSS v4). ",
+      "To open something, double click it. You can move windows around and resize them. There are even working Context Menus.",
     ],
-    tip: "Tip: drag any window by its title bar, and resize it from the bottom-right corner.",
+    tip: "Tip: You can make your own version of this website easily, i open sourced a template in the GitHub repository. More info in the Help Section.",
     contents: [
       { label: "My Projects", target: "projects", color: "blue" },
       { label: "View Portfolio", target: "portfolio", color: "red" },
@@ -120,7 +120,7 @@ export const site: SiteConfig = {
   },
 
   about: {
-    title: "Samuel Rilling. Mechanical Engineer, Full Stack Developer",
+    title: "Samuel Rilling. Mechanical Engineer, Coder, Builder. Your average non-average guy.",
     bio: [
       "I build fast, accessible web interfaces with React, TypeScript, and a soft spot for retro UI.",
       "Lately I have been working on developer tools and design systems. I care about the details: focus states, motion, and copy that respects the reader.",
