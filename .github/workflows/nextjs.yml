@@ -53,12 +53,14 @@ jobs:
           node-version: "20"
           cache: ${{ steps.detect-package-manager.outputs.manager }}
       - name: Setup Pages
+        id: pages
         uses: actions/configure-pages@v5
-      - name: Derive base path from repository name
-        id: basepath
-        # Project sites are served under /<repo>. Strips the "owner/" prefix.
-        # For a root "<user>.github.io" repo, set value to an empty string instead.
-        run: echo "value=/${GITHUB_REPOSITORY#*/}" >> "$GITHUB_OUTPUT"
+      # base_path comes from configure-pages and is correct for BOTH hosting modes:
+      #   "https://<user>.github.io/<repo>"  -> "/<repo>"
+      #   custom domain (samuelrill.ing)     -> ""   (served from the root)
+      # Deriving it from the repo name instead breaks custom-domain sites: the
+      # exported HTML then requests /<repo>/_next/... which 404s and the page
+      # renders as unstyled text.
       - name: Restore cache
         uses: actions/cache@v4
         with:
@@ -74,7 +76,7 @@ jobs:
       - name: Build with Next.js
         run: ${{ steps.detect-package-manager.outputs.runner }} next build
         env:
-          PAGES_BASE_PATH: ${{ steps.basepath.outputs.value }}
+          PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}
           NEXT_PUBLIC_BUILD_TIME: ${{ github.sha }}_${{ github.run_number }}
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
